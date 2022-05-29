@@ -12,3 +12,53 @@
 // the screen should remain fully clear as long as no key is pressed.
 
 // Put your code here.
+(MAIN)
+@i
+M=0
+
+@addr
+M=0
+
+// if no key is pressed then color is white
+// else color is black
+@color
+M=0
+
+@KBD
+D=M
+@DRAW_SCREEN
+D;JEQ
+
+@color
+M=-1
+
+(DRAW_SCREEN)
+@SCREEN
+D=A
+@i
+D=D+M
+@addr
+M=D     // addr = SCREEN + i
+
+// if addr === KBD then end draw (KBD goes after screen memory)
+@KBD
+D=D-A
+@END_DRAW
+D;JEQ
+
+// else start drawing
+@color
+D=M
+@addr
+A=M
+M=D
+
+// iterate
+@i
+M=M+1
+@DRAW_SCREEN
+0;JMP
+(END_DRAW)
+
+@MAIN
+0;JMP
