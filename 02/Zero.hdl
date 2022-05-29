@@ -1,0 +1,10 @@
+// absolutely redundant CHIP as you can just pass "false" value instead
+
+CHIP Zero {
+    IN in;
+
+    OUT out;
+
+    PARTS:
+    And(a=in, b=false, out=out);
+}
