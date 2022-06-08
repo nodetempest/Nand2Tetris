@@ -27,5 +27,15 @@ CHIP Memory {
     OUT out[16];
 
     PARTS:
-    // Put your code here:
+    DMux16(in=in, sel=address[14], a=a16, b=b16);
+    DMux(in=load, sel=address[14], a=la16, b=lb16);
+    RAM16K(in=a16, load=la16, address=address[0..13], out=ram16Out);
+
+    DMux16(in=b16, sel=address[13], a=a8, b=b8);
+    DMux(in=lb16, sel=address[13], a=la8, b=lb8);
+    RAM8K(in=a8, load=la8, address=address[0..12], out=ram8Out);
+    Register(in=b8, load=lb8, out=regOut);
+
+    Mux16(a=ram8Out, b=regOut, sel=address[13], out=ram8AndRegOut);
+    Mux16(a=ram16Out, b=ram8AndRegOut, sel=address[14], out=out);
 }
