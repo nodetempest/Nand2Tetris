@@ -39,5 +39,72 @@ CHIP CPU {
         pc[15];          // address of next instruction
 
     PARTS:
-    // Put your code here:
+    // Instruction handling
+
+    Not(in=instruction[15], out=AInstructionBit);
+    Mux16(a=ALUOut, b=instruction, sel=AInstructionBit, out=ALUOrAIstruction);
+
+    Or(a=instruction[5], b=AInstructionBit, out=loadARegister);
+    ARegister(in=ALUOrAIstruction, load=loadARegister, out=ARegisterOut, out[0..14]=addressM);
+
+    // ALU inputs
+
+    Mux16(a=ARegisterOut, b=inM, sel=instruction[12], out=AOrMInput);
+    ALU(
+        x=DRegisterOut, 
+        y=AOrMInput, 
+        zx=instruction[11],
+        nx=instruction[10],
+        zy=instruction[9],
+        ny=instruction[8],
+        f=instruction[7],
+        no=instruction[6],
+        out=ALUOut,
+        out=outM,
+        zr=zr,
+        ng=ng
+    );
+    DRegister(in=ALUOut, load=instruction[4], out=DRegisterOut);
+
+    And(a=instruction[15], b=instruction[3], out=writeM);
+
+    // Control
+    Not(in=zr, out=notZr);
+    Not(in=ng, out=notNg);
+
+    And(a=instruction[2], b=true, out=J1);
+    And(a=instruction[1], b=true, out=J2);
+    And(a=instruction[0], b=true, out=J3);
+
+    Not(in=J1, out=notJ1);
+    Not(in=J2, out=notJ2);
+    Not(in=J3, out=notJ3);
+
+    And3Way(in[0]=notJ1, in[1]=notJ2, in[2]=J3, out=JGTbits);
+    And3Way(in[0]=notJ1, in[1]=J2, in[2]=notJ3, out=JEQbits);
+    And3Way(in[0]=notJ1, in[1]=J2, in[2]=J3, out=JGEbits);
+    And3Way(in[0]=J1, in[1]=notJ2, in[2]=notJ3, out=JLTbits);
+    And3Way(in[0]=J1, in[1]=notJ2, in[2]=J3, out=JNEbits);
+    And3Way(in[0]=J1, in[1]=J2, in[2]=notJ3, out=JLEbits);
+    And3Way(in[0]=J1, in[1]=J2, in[2]=J3, out=JMPbits);
+
+    And(a=notNg, b=notZr, out=JGTcondition);
+    And(a=JGTbits, b=JGTcondition, out=JGT);
+
+    And(a=JEQbits, b=zr, out=JEQ);
+
+    And(a=JGEbits, b=notNg, out=JGE);
+
+    And(a=JLTbits, b=ng, out=JLT);
+
+    And(a=JNEbits, b=notZr, out=JNE);
+
+    Or(a=ng, b=zr, out=JLEcondition);
+    And(a=JLEbits, b=JLEcondition, out=JLE);
+
+    Or8Way(in[0]=false, in[1]=JGT, in[2]=JEQ, in[3]=JGE, in[4]=JLT, in[5]=JNE, in[6]=JLE, in[7]=JMPbits, out=doJump);
+    And(a=instruction[15], b=doJump, out=doJumpIfCinstruction);
+
+
+    PC(in=ARegisterOut, load=doJumpIfCinstruction, inc=true, reset=reset, out[0..14]=pc);
 }
