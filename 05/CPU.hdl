@@ -39,38 +39,23 @@ CHIP CPU {
         pc[15];          // address of next instruction
 
     PARTS:
-    // Instruction handling
+    // human readable instruction bits
 
-    Not(in=instruction[15], out=AInstructionBit);
-    Mux16(a=ALUOut, b=instruction, sel=AInstructionBit, out=ALUOrAIstruction);
+    And(a=instruction[15], b=true, out=CInstructionBit);
+    Not(in=CInstructionBit, out=AInstructionBit);
 
-    Or(a=instruction[5], b=AInstructionBit, out=loadARegister);
-    ARegister(in=ALUOrAIstruction, load=loadARegister, out=ARegisterOut, out[0..14]=addressM);
+    And(a=instruction[12], b=true, out=AorMbit);
 
-    // ALU inputs
+    And(a=instruction[11], b=true, out=C1);
+    And(a=instruction[10], b=true, out=C2);
+    And(a=instruction[9], b=true, out=C3);
+    And(a=instruction[8], b=true, out=C4);
+    And(a=instruction[7], b=true, out=C5);
+    And(a=instruction[6], b=true, out=C6);
 
-    Mux16(a=ARegisterOut, b=inM, sel=instruction[12], out=AOrMInput);
-    ALU(
-        x=DRegisterOut, 
-        y=AOrMInput, 
-        zx=instruction[11],
-        nx=instruction[10],
-        zy=instruction[9],
-        ny=instruction[8],
-        f=instruction[7],
-        no=instruction[6],
-        out=ALUOut,
-        out=outM,
-        zr=zr,
-        ng=ng
-    );
-    DRegister(in=ALUOut, load=instruction[4], out=DRegisterOut);
-
-    And(a=instruction[15], b=instruction[3], out=writeM);
-
-    // Control
-    Not(in=zr, out=notZr);
-    Not(in=ng, out=notNg);
+    And(a=instruction[5], b=true, out=D1);
+    And(a=instruction[4], b=true, out=D2);
+    And(a=instruction[3], b=true, out=D3);
 
     And(a=instruction[2], b=true, out=J1);
     And(a=instruction[1], b=true, out=J2);
@@ -79,6 +64,40 @@ CHIP CPU {
     Not(in=J1, out=notJ1);
     Not(in=J2, out=notJ2);
     Not(in=J3, out=notJ3);
+
+
+    // Instruction handling
+
+    Mux16(a=ALUOut, b=instruction, sel=AInstructionBit, out=ALUOrAIstruction);
+
+    Or(a=D1, b=AInstructionBit, out=loadARegister);
+    ARegister(in=ALUOrAIstruction, load=loadARegister, out=ARegisterOut, out[0..14]=addressM);
+
+    // ALU inputs
+
+    Mux16(a=ARegisterOut, b=inM, sel=AorMbit, out=AOrMInput);
+    ALU(
+        x=DRegisterOut, 
+        y=AOrMInput, 
+        zx=C1,
+        nx=C2,
+        zy=C3,
+        ny=C4,
+        f=C5,
+        no=C6,
+        out=ALUOut,
+        out=outM,
+        zr=zr,
+        ng=ng
+    );
+    DRegister(in=ALUOut, load=D2, out=DRegisterOut);
+
+    And(a=CInstructionBit, b=D3, out=writeM);
+
+    // Control
+
+    Not(in=zr, out=notZr);
+    Not(in=ng, out=notNg);
 
     And3Way(in[0]=notJ1, in[1]=notJ2, in[2]=J3, out=JGTbits);
     And3Way(in[0]=notJ1, in[1]=J2, in[2]=notJ3, out=JEQbits);
@@ -103,8 +122,8 @@ CHIP CPU {
     And(a=JLEbits, b=JLEcondition, out=JLE);
 
     Or8Way(in[0]=false, in[1]=JGT, in[2]=JEQ, in[3]=JGE, in[4]=JLT, in[5]=JNE, in[6]=JLE, in[7]=JMPbits, out=doJump);
-    And(a=instruction[15], b=doJump, out=doJumpIfCinstruction);
+    And(a=CInstructionBit, b=doJump, out=doJumpIfCInstruction);
 
 
-    PC(in=ARegisterOut, load=doJumpIfCinstruction, inc=true, reset=reset, out[0..14]=pc);
+    PC(in=ARegisterOut, load=doJumpIfCInstruction, inc=true, reset=reset, out[0..14]=pc);
 }
