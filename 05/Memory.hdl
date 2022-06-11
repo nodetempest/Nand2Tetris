@@ -33,9 +33,10 @@ CHIP Memory {
 
     DMux16(in=b16, sel=address[13], a=a8, b=b8);
     DMux(in=lb16, sel=address[13], a=la8, b=lb8);
-    RAM8K(in=a8, load=la8, address=address[0..12], out=ram8Out);
-    Register(in=b8, load=lb8, out=regOut);
+    Screen(in=a8, load=la8, address=address[0..12], out=ram8Out);
+    Keyboard(out=regOut);
 
     Mux16(a=ram8Out, b=regOut, sel=address[13], out=ram8AndRegOut);
     Mux16(a=ram16Out, b=ram8AndRegOut, sel=address[14], out=out);
 }
+// There is better implementation by signle DMux4Way but current is fine too.
