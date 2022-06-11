@@ -90,7 +90,8 @@ CHIP CPU {
         zr=zr,
         ng=ng
     );
-    DRegister(in=ALUOut, load=D2, out=DRegisterOut);
+    And(a=CInstructionBit, b=D2, out=loadD2IfCInstruction);
+    DRegister(in=ALUOut, load=loadD2IfCInstruction, out=DRegisterOut);
 
     And(a=CInstructionBit, b=D3, out=writeM);
 
