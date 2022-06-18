@@ -69,16 +69,37 @@ const jumpBitsMap = {
   JMP: "111",
 };
 
-// read .asm file content into variable
+const predefinedVarsTable = {
+  R0: "0",
+  R1: "1",
+  R2: "2",
+  R3: "3",
+  R4: "4",
+  R5: "5",
+  R6: "6",
+  R7: "7",
+  R8: "8",
+  R9: "9",
+  R10: "10",
+  R11: "11",
+  R12: "12",
+  R13: "13",
+  R14: "14",
+  R15: "15",
+  SP: "0",
+  LCL: "1",
+  ARG: "2",
+  THIS: "3",
+  THAT: "4",
+  SCREEN: "16384",
+  KBD: "24576",
+};
 
-const pathToFile = process.argv.slice(2)[0];
-
-const fileContent = fs.readFileSync(pathToFile).toString();
-const lines = fileContent.split("\r\n");
+const DYNAMIC_VARS_START_POS = 16;
 
 // Part 1: remove comments
 
-const removeComments = (lines) => {
+const removeCommentsAndWhitespaces = (lines) => {
   return lines.map((line) => line.split("//")[0].trim()).filter(Boolean);
 };
 
@@ -90,7 +111,7 @@ const translateA = (instr) => {
   const binary = Number(instr.slice(1)).toString(2);
 
   return (
-    Array(16 - binary.length)
+    Array(DYNAMIC_VARS_START_POS - binary.length)
       .fill()
       .map(() => "0")
       .join("") + binary
@@ -155,15 +176,138 @@ const translateInstructions = (instructions) => {
   );
 };
 
-// process each line and write result into .hack file
+// Part 3: handle variables
+
+const isGoToVariable = (line) => line.startsWith("(") && line.endsWith(")");
+const isSimpleVariable = (line) =>
+  line.startsWith("@") && Number(line.slice(1)) >= 0;
+
+const getGoToVarsTable = (lines) => {
+  /*
+    In:
+    1 ...
+    2 (LOOP)
+    3 ...
+    4 ...
+    5 (SOME_VAR)
+    6 ...
+    7 (END)
+    8 ...
+    
+    Out: [{ LOOP: 2 }, { SOME_VAR: 5 }, { END: 7 }]
+  */
+  const varsLocation = lines.reduce(
+    (acc, line, index) =>
+      isGoToVariable(line)
+        ? acc.concat({ [line.slice(1).slice(0, -1)]: index })
+        : acc,
+    []
+  );
+
+  /* 
+    Because rows will collapse after we remove goto vars,
+    actual location of goto vars will be: varLocation - varIndex
+    Example: 
+      In:
+        1 ...          -->              -->   1 ...
+        2 (LOOP)       -->   2 - 0 = 2  -->   2 ... (LOOP)      
+        3 ...          -->              -->   3 ...
+        4 ...          -->              -->   4 ... (SOME_VAR)  
+        5 (SOME_VAR)   -->   5 - 1 = 4  -->   5 ... (END)
+        6 ...          -->              -->   6 ... 
+        7 (END)        -->   7 - 2 = 5  -->   -----
+        8 ...          -->              -->   -----
+  */
+
+  // In: [{ LOOP: 2 }, { SOME_VAR: 5 }, { END: 7 }]
+  // Out: { LOOP: 2, SOME_VAR: 4, END: 5 }
+  const afterCollapseLocation = varsLocation.reduce((acc, variable, index) => {
+    const [[varName, varLocation]] = Object.entries(variable);
+    return {
+      ...acc,
+      [varName]: varLocation - index,
+    };
+  }, {});
+
+  return afterCollapseLocation;
+};
+
+const getDynamicVarsTable = (lines, predefinedVarsTable, gotoVarsTable) => {
+  return lines.reduce((acc, line) => {
+    const varName = line.slice(1);
+
+    if (
+      !isAInstruction(line) ||
+      varName in acc ||
+      varName in predefinedVarsTable ||
+      varName in gotoVarsTable ||
+      isSimpleVariable(line)
+    ) {
+      return acc;
+    }
+
+    return {
+      ...acc,
+      [varName]: DYNAMIC_VARS_START_POS + Object.keys(acc).length,
+    };
+  }, {});
+};
+
+const getVarsTable = (
+  predefinedVarsTable,
+  gotoVarsTable,
+  dynamicVarsTable
+) => ({
+  ...predefinedVarsTable,
+  ...gotoVarsTable,
+  ...dynamicVarsTable,
+});
+
+const removeGoToVars = (lines) => lines.filter((line) => !isGoToVariable(line));
+
+const replaceVars = (lines, varsTable) => {
+  return removeGoToVars(lines).map((line) => {
+    if (!isAInstruction(line) || isSimpleVariable(line)) {
+      return line;
+    }
+
+    return "@" + varsTable[line.slice(1)];
+  });
+};
+
+// process each line
 
 const processLines = (lines) => {
-  lines = removeComments(lines);
+  lines = removeCommentsAndWhitespaces(lines);
+
+  const gotoVarsTable = getGoToVarsTable(lines);
+  const dynamicVarsTable = getDynamicVarsTable(
+    lines,
+    predefinedVarsTable,
+    gotoVarsTable
+  );
+  const varsTable = getVarsTable(
+    predefinedVarsTable,
+    gotoVarsTable,
+    dynamicVarsTable
+  );
+
+  lines = replaceVars(lines, varsTable);
   lines = translateInstructions(lines);
+
   return lines;
 };
 
-fs.writeFileSync(
-  pathToFile.replace(".asm", ".hack"),
-  processLines(lines).join("\r\n")
-);
+const main = () => {
+  const pathToFile = process.argv.slice(2)[0];
+
+  const fileContent = fs.readFileSync(pathToFile).toString();
+  const lines = fileContent.split("\r\n");
+
+  fs.writeFileSync(
+    pathToFile.replace(".asm", ".hack"),
+    processLines(lines).join("\r\n")
+  );
+};
+
+main();
