@@ -178,35 +178,21 @@ const translateInstructions = (instructions) => {
 
 // Part 3: handle variables
 
+// Example:
+// 1 ...
+// 2 (LOOP)
 const isGoToVariable = (line) => line.startsWith("(") && line.endsWith(")");
+
+// Example:
+// 1 ...
+// 2 @19
 const isSimpleVariable = (line) =>
   line.startsWith("@") && Number(line.slice(1)) >= 0;
 
 const getGoToVarsTable = (lines) => {
-  /*
-    In:
-    1 ...
-    2 (LOOP)
-    3 ...
-    4 ...
-    5 (SOME_VAR)
-    6 ...
-    7 (END)
-    8 ...
-    
-    Out: [{ LOOP: 2 }, { SOME_VAR: 5 }, { END: 7 }]
-  */
-  const varsLocation = lines.reduce(
-    (acc, line, index) =>
-      isGoToVariable(line)
-        ? acc.concat({ [line.slice(1).slice(0, -1)]: index })
-        : acc,
-    []
-  );
-
   /* 
     Because rows will collapse after we remove goto vars,
-    actual location of goto vars will be: varLocation - varIndex
+    actual location of goto vars will be: currentVarIndex - varsCountBeforeCurrent
     Example: 
       In:
         1 ...          -->              -->   1 ...
@@ -217,19 +203,21 @@ const getGoToVarsTable = (lines) => {
         6 ...          -->              -->   6 ... 
         7 (END)        -->   7 - 2 = 5  -->   -----
         8 ...          -->              -->   -----
+
+      Out: { LOOP: 2, SOME_VAR: 4, END: 5 }  
   */
+  return lines.reduce((acc, line, currentVarIndex) => {
+    const varsCountBeforeCurrent = Object.keys(acc).length;
 
-  // In: [{ LOOP: 2 }, { SOME_VAR: 5 }, { END: 7 }]
-  // Out: { LOOP: 2, SOME_VAR: 4, END: 5 }
-  const afterCollapseLocation = varsLocation.reduce((acc, variable, index) => {
-    const [[varName, varLocation]] = Object.entries(variable);
-    return {
-      ...acc,
-      [varName]: varLocation - index,
-    };
+    // Example: (LOOP) --> LOOP
+    const varName = line.slice(1).slice(0, -1);
+
+    if (isGoToVariable(line)) {
+      return { ...acc, [varName]: currentVarIndex - varsCountBeforeCurrent };
+    }
+
+    return acc;
   }, {});
-
-  return afterCollapseLocation;
 };
 
 const getDynamicVarsTable = (lines, predefinedVarsTable, gotoVarsTable) => {
@@ -265,7 +253,7 @@ const getVarsTable = (
 
 const removeGoToVars = (lines) => lines.filter((line) => !isGoToVariable(line));
 
-const replaceVars = (lines, varsTable) => {
+const handleVars = (lines, varsTable) => {
   return removeGoToVars(lines).map((line) => {
     if (!isAInstruction(line) || isSimpleVariable(line)) {
       return line;
@@ -292,7 +280,7 @@ const processLines = (lines) => {
     dynamicVarsTable
   );
 
-  lines = replaceVars(lines, varsTable);
+  lines = handleVars(lines, varsTable);
   lines = translateInstructions(lines);
 
   return lines;
