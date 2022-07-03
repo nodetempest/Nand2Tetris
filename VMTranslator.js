@@ -1,6 +1,41 @@
 const fs = require("fs");
 const path = require("path");
 
+const createSharedCallCounterWrapper =
+  (count = 0) =>
+  (fn) =>
+  (...args) =>
+    fn(...args.concat(count++));
+
+const withSharedCounter = createSharedCallCounterWrapper();
+
+// prettier-ignore
+const createCompareHandler = (jumpBitName) => (count) =>
+  [
+    "@SP",    // SP--; D = *SP
+    "M=M-1",
+    "A=M",
+    "D=M",
+    "@SP",    // SP--; D = *SP - D
+    "M=M-1",
+    "A=M",
+    "D=M-D",
+    `@IF_TRUE.${count}`,    // D `compare` 0 ? *SP = true(-1) : *SP = false(0)
+    `D;${jumpBitName}`,
+    "@SP",    // false case
+    "A=M",
+    "M=0",
+    `@IF_FALSE.${count}`,
+    "0;JMP",
+    `(IF_TRUE.${count})`,
+    "@SP",    // true case
+    "A=M",
+    "M=-1",
+    `(IF_FALSE.${count})`,
+    "@SP",    // SP++
+    "M=M+1",
+  ].join("\r\n");
+
 // prettier-ignore
 const calcOperationsMap = {
   add: [
@@ -25,96 +60,6 @@ const calcOperationsMap = {
           "M=M-1",
           "A=M",
           "M=M-D",
-          "@SP",    // SP++
-          "M=M+1",
-        ].join("\r\n"),
-
-  eq:   [
-          "@SP",    // SP--; D = *SP
-          "M=M-1",
-          "A=M",
-          "D=M",
-          "@SP",    // SP--; D = D - *SP
-          "M=M-1",
-          "A=M",
-          "D=D-M",
-          "@DIFF_EQ_ZERO",    // D == 0 ? *SP = 1 : *SP = 0
-          "D;JEQ",
-          "M=0",
-          "(DIFF_EQ_ZERO)",
-          "M=1",
-          "@SP",    // SP++
-          "M=M+1",
-        ].join("\r\n"),
-
-  lt:   [
-          "@SP",    // SP--; D = *SP
-          "M=M-1",
-          "A=M",
-          "D=M",
-          "@SP",    // SP--; D = *SP - D
-          "M=M-1",
-          "A=M",
-          "D=M-D",
-          "@DIFF_IS_NEG",    // D < 0 ? *SP = 1 : *SP = 0
-          "D;JLT",
-          "M=0",
-          "(DIFF_IS_NEG)",
-          "M=1",
-          "@SP",    // SP++
-          "M=M+1",
-        ].join("\r\n"),
-
-  gt:   [
-          "@SP",    // SP--; D = *SP
-          "M=M-1",
-          "A=M",
-          "D=M",
-          "@SP",    // SP--; D = *SP - D
-          "M=M-1",
-          "A=M",
-          "D=M-D",
-          "@DIFF_IS_POS",    // D > 0 ? *SP = 1 : *SP = 0
-          "D;JGT",
-          "M=0",
-          "(DIFF_IS_POS)",
-          "M=1",
-          "@SP",    // SP++
-          "M=M+1",
-        ].join("\r\n"),
-
-  le:   [
-          "@SP",    // SP--; D = *SP
-          "M=M-1",
-          "A=M",
-          "D=M",
-          "@SP",    // SP--; D = *SP - D
-          "M=M-1",
-          "A=M",
-          "D=M-D",
-          "@DIFF_IS_POS",    // D <= 0 ? *SP = 1 : *SP = 0
-          "D;JLE",
-          "M=0",
-          "(DIFF_IS_POS)",
-          "M=1",
-          "@SP",    // SP++
-          "M=M+1",
-        ].join("\r\n"),
-
-  ge:   [
-          "@SP",    // SP--; D = *SP
-          "M=M-1",
-          "A=M",
-          "D=M",
-          "@SP",    // SP--; D = *SP - D
-          "M=M-1",
-          "A=M",
-          "D=M-D",
-          "@DIFF_IS_POS",    // D >= 0 ? *SP = 1 : *SP = 0
-          "D;JGE",
-          "M=0",
-          "(DIFF_IS_POS)",
-          "M=1",
           "@SP",    // SP++
           "M=M+1",
         ].join("\r\n"),
@@ -162,6 +107,15 @@ const calcOperationsMap = {
           "@SP",    // SP++
           "M=M+1",
         ].join("\r\n"),
+  
+  compare: {
+    eq: withSharedCounter(createCompareHandler("JEQ")),
+    ne: withSharedCounter(createCompareHandler("JNE")),
+    lt: withSharedCounter(createCompareHandler("JLT")),
+    gt: withSharedCounter(createCompareHandler("JGT")),
+    le: withSharedCounter(createCompareHandler("JLE")),
+    ge: withSharedCounter(createCompareHandler("JGE")),
+  },
 };
 
 // prettier-ignore
@@ -170,7 +124,7 @@ const createGeneralPushPopHandler = ptr => ({
                       `@${value}`,    // D = *(ptr + value)
                       "D=A",
                       `@${ptr}`,
-                      "A=A+D",
+                      "A=M+D",
                       "D=M",
                       "@SP",    // *SP = D
                       "A=M",
@@ -181,7 +135,7 @@ const createGeneralPushPopHandler = ptr => ({
 
   pop: (value) =>  [
                     `@${ptr}`,    // temp_ptr = ptr + value
-                    "D=A",
+                    "D=M",
                     `@${value}`,
                     "D=D+A",
                     "@temp_ptr",
@@ -200,9 +154,11 @@ const createGeneralPushPopHandler = ptr => ({
 const pushPopMap = {
   constant: {
     push: (value) =>  [
+                        `@${value}`,
+                        "D=A",
                         "@SP",    // *SP = value
                         "A=M",
-                        `M=${value}`,
+                        "M=D",
                         "@SP",    // SP++
                         "M=M+1",
                       ].join("\r\n"),
@@ -216,11 +172,7 @@ const pushPopMap = {
 
   pointer: {
     push: (value) =>  [
-                        "@PUSH_THIS",   // value == 0 ? A = THIS : A = THAT
-                        `${value};JEQ`,
-                        "@THAT",
-                        "(PUSH_THIS)",    // *SP = THIS/THAT
-                        "@THIS",
+                        `@${value === "0" ? "THIS" : "THAT"}`, // *SP = THIS/THAT
                         "D=M",
                         "@SP",
                         "A=M",
@@ -230,23 +182,18 @@ const pushPopMap = {
                       ].join("\r\n"),
 
     pop: (value) =>  [
-                        "@SP",    // SP--
+                        "@SP",    // SP--; D = *SP
                         "M=M-1",   
-                        "@SP",    // D = *SP
                         "A=M",
                         "D=M",
-                        "@POP_THIS",    // value == 0 ? A = THIS : A = THAT
-                        `${value};JEQ`,
-                        "@THAT",
-                        "(POP_THIS)",
-                        "@THIS",
+                        `@${value === "0" ? "THIS" : "THAT"}`,    // value == 0 ? A = THIS : A = THAT
                         "M=D",    // THIS/THAT = D
                       ].join("\r\n"),
   },
 
   static: {
     push: (value, fileName) =>  [
-                                  `@${[fileName, value].join(".")}`,    // D = @Foo.i
+                                  `@${fileName}.${value}`,    // D = @Foo.i
                                   "D=M",
                                   "@SP",    // *SP = D
                                   "A=M",
@@ -260,7 +207,7 @@ const pushPopMap = {
                                   "M=M-1",
                                   "A=M",    // D = *SP
                                   "D=M",
-                                  `@${[fileName, value].join(".")}`,    // @Foo.i = D
+                                  `@${fileName}.${value}`,    // @Foo.i = D
                                   "M=D",
                                 ].join("\r\n"),
   },
@@ -274,6 +221,8 @@ const translateInstructions = (lines, fileName) => {
   return lines.map((instruction) => {
     if (instruction in calcOperationsMap) {
       return calcOperationsMap[instruction];
+    } else if (instruction in calcOperationsMap.compare) {
+      return calcOperationsMap.compare[instruction]();
     } else {
       const [stackOperation, memorySegment, value] = instruction.split(" ");
 
