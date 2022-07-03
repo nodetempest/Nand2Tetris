@@ -213,13 +213,45 @@ const pushPopMap = {
   },
 };
 
+// prettier-ignore
+const branchingMap = {
+  label: label => `(${label})`,
+
+  goto: label =>  [
+                    `@${label}`,
+                    "0;JMP",
+                  ].join("\r\n"),
+
+  "if-goto": withSharedCounter((label, count) => [
+                                "@SP",    // SP--; D = *SP
+                                "M=M-1",
+                                "A=M",
+                                "D=M",
+                                `@IF-GOTO_FALSE.${count}`,    // D == 0 ? skip jump : jump to (label)
+                                "D;JEQ",
+                                `@${label}`,
+                                "0;JMP",
+                                `(IF-GOTO_FALSE.${count})`,
+                              ].join("\r\n")),
+}
+
 const removeCommentsAndWhitespaces = (lines) => {
   return lines.map((line) => line.split("//")[0].trim()).filter(Boolean);
 };
 
+const handleBranching = (instruction) => {
+  const [operation, label] = instruction.split(" ");
+  return branchingMap[operation](label);
+};
+
+const isBranching = (instruction) =>
+  instruction.includes("goto") || instruction.startsWith("label");
+
 const translateInstructions = (lines, fileName) => {
   return lines.map((instruction) => {
-    if (instruction in calcOperationsMap) {
+    if (isBranching(instruction)) {
+      return handleBranching(instruction);
+    } else if (instruction in calcOperationsMap) {
       return calcOperationsMap[instruction];
     } else if (instruction in calcOperationsMap.compare) {
       return calcOperationsMap.compare[instruction]();
