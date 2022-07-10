@@ -1,40 +1,39 @@
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
 
-const createSharedCallCounterWrapper =
-  (count = 0) =>
-  (fn) =>
-  (...args) =>
-    fn(...args.concat(count++));
+const genId = () => crypto.randomBytes(16).toString("hex");
 
-const withSharedCounter = createSharedCallCounterWrapper();
+const range = (n) => Array.apply(null, { length: n }).map(Number.call, Number);
 
-// prettier-ignore
-const createCompareHandler = (jumpBitName) => (count) =>
-  [
-    "@SP",    // SP--; D = *SP
+const createCompareHandler = (jumpBitName) => {
+  const id = genId();
+
+  return [
+    "@SP", // SP--; D = *SP
     "M=M-1",
     "A=M",
     "D=M",
-    "@SP",    // SP--; D = *SP - D
+    "@SP", // SP--; D = *SP - D
     "M=M-1",
     "A=M",
     "D=M-D",
-    `@IF_TRUE.${count}`,    // D `compare` 0 ? *SP = true(-1) : *SP = false(0)
+    `@IF_TRUE.${id}`, // D `compare` 0 ? *SP = true(-1) : *SP = false(0)
     `D;${jumpBitName}`,
-    "@SP",    // false case
+    "@SP", // false case
     "A=M",
     "M=0",
-    `@IF_FALSE.${count}`,
+    `@IF_FALSE.${id}`,
     "0;JMP",
-    `(IF_TRUE.${count})`,
-    "@SP",    // true case
+    `(IF_TRUE.${id})`,
+    "@SP", // true case
     "A=M",
     "M=-1",
-    `(IF_FALSE.${count})`,
-    "@SP",    // SP++
+    `(IF_FALSE.${id})`,
+    "@SP", // SP++
     "M=M+1",
   ].join("\r\n");
+};
 
 // prettier-ignore
 const calcOperationsMap = {
@@ -109,12 +108,12 @@ const calcOperationsMap = {
         ].join("\r\n"),
   
   compare: {
-    eq: withSharedCounter(createCompareHandler("JEQ")),
-    ne: withSharedCounter(createCompareHandler("JNE")),
-    lt: withSharedCounter(createCompareHandler("JLT")),
-    gt: withSharedCounter(createCompareHandler("JGT")),
-    le: withSharedCounter(createCompareHandler("JLE")),
-    ge: withSharedCounter(createCompareHandler("JGE")),
+    eq: createCompareHandler("JEQ"),
+    ne: createCompareHandler("JNE"),
+    lt: createCompareHandler("JLT"),
+    gt: createCompareHandler("JGT"),
+    le: createCompareHandler("JLE"),
+    ge: createCompareHandler("JGE"),
   },
 };
 
@@ -135,7 +134,8 @@ const createGeneralPushPopHandler = ptr => ({
 
   pop: (value) =>  [
                     `@${ptr}`,    // temp_ptr = ptr + value
-                    "D=M",
+                    // temp ("5") should be dereferenced by "A"
+                    `D=${ptr === "5" ? "A" : "M"}`,
                     `@${value}`,
                     "D=D+A",
                     "@temp_ptr",
@@ -222,35 +222,214 @@ const branchingMap = {
                     "0;JMP",
                   ].join("\r\n"),
 
-  "if-goto": withSharedCounter((label, count) => [
-                                "@SP",    // SP--; D = *SP
-                                "M=M-1",
-                                "A=M",
-                                "D=M",
-                                `@IF-GOTO_FALSE.${count}`,    // D == 0 ? skip jump : jump to (label)
-                                "D;JEQ",
-                                `@${label}`,
-                                "0;JMP",
-                                `(IF-GOTO_FALSE.${count})`,
-                              ].join("\r\n")),
+  "if-goto": label => {
+    const id = genId();
+
+    return [
+      "@SP",    // SP--; D = *SP
+      "M=M-1",
+      "A=M",
+      "D=M",
+      `@IF-GOTO_FALSE.${id}`,    // D == 0 ? skip jump : jump to (label)
+      "D;JEQ",
+      `@${label}`,
+      "0;JMP",
+      `(IF-GOTO_FALSE.${id})`,
+    ].join("\r\n");
+  },
 }
 
 const removeCommentsAndWhitespaces = (lines) => {
   return lines.map((line) => line.split("//")[0].trim()).filter(Boolean);
 };
 
-const handleBranching = (instruction) => {
-  const [operation, label] = instruction.split(" ");
-  return branchingMap[operation](label);
+const setZerosToLocals = (numberOfLocals) => {
+  return range(numberOfLocals).map((position) =>
+    [
+      "@LCL", // *(LCL + position) = 0
+      "D=M",
+      `@${position}`,
+      "A=D+A",
+      "M=0",
+    ].join("\r\n")
+  );
 };
 
-const isBranching = (instruction) =>
-  instruction.includes("goto") || instruction.startsWith("label");
+// prettier-ignore
+const declFn = ({ name, numberOfLocals }) =>  [
+                            `(${name})`,
+                            "@SP",    // set LCL
+                            "D=M",
+                            "@LCL",
+                            "M=D",
+                            `@${numberOfLocals}`,   // set SP
+                            "D=A",
+                            "@SP",   
+                            "M=M+D",
+                            ...setZerosToLocals(numberOfLocals),
+                          ].join("\r\n");
+
+// prettier-ignore
+const handleReturn = () => [
+                        // endFrame = LCL
+                        "@LCL",
+                        "D=M",
+                        "@endFrame",
+                        "M=D",
+                        // retAddr = *(endFrame - 5)
+                        "@endFrame",   // D = endFrame
+                        "D=M",
+                        "@5",   // D = *(D - 5)
+                        "A=D-A",
+                        "D=M",    
+                        "@retAddr",    // retAddr = D
+                        "M=D",
+                        // *ARG = pop()
+                        "@SP",   // D = *(SP - 1)
+                        "A=M-1",
+                        "D=M",
+                        "@ARG",   // *ARG = D
+                        "A=M",
+                        "M=D",
+                        // SP = ARG + 1
+                        "@ARG",
+                        "D=M+1",
+                        "@SP",
+                        "M=D",
+                        // THAT = *(endFrame - 1)
+                        "@endFrame",    // D = *(endFrame - 1)
+                        "A=M-1",
+                        "D=M",
+                        "@THAT",    // THAT = D
+                        "M=D",
+                        // THIS = *(endFrame - 2)
+                        "@endFrame",    // D = *(endFrame - 2)
+                        "D=M",
+                        "@2",
+                        "A=D-A",
+                        "D=M",
+                        "@THIS",    // THIS = D
+                        "M=D",
+                        // ARG = *(endFrame - 3)
+                        "@endFrame",    // D = *(endFrame - 3)
+                        "D=M",
+                        "@3",
+                        "A=D-A",
+                        "D=M",
+                        "@ARG",    // ARG = D
+                        "M=D",
+                        // LCL = *(endFrame - 4)
+                        "@endFrame",    // D = *(endFrame - 4)
+                        "D=M",
+                        "@4",
+                        "A=D-A",
+                        "D=M",
+                        "@LCL",    // LCL = D
+                        "M=D",
+                        // goto retAddr
+                        "@retAddr",
+                        "A=M",
+                        "0;JMP",
+                     ].join("\r\n");
+
+// prettier-ignore
+const savePtrToCallFrame = (ptr, order) => [
+                            "@SP",
+                            "D=M",
+                            `@${order}`,
+                            "D=D+A",
+                            "@temp_ptr",
+                            "M=D",
+                            `@${ptr}`,
+                            // retAddr has order of 0, save A value to D
+                            `D=${order === 0 ? "A" : "M"}`,
+                            "@temp_ptr",
+                            "A=M",
+                            "M=D",
+                          ].join("\r\n");
+
+// prettier-ignore
+const callFn = (fnName, numberOfArgs) => {
+  const retAddr =`${fnName}$ret.${genId()}`;
+
+  return [
+    savePtrToCallFrame(retAddr, 0),   // save pointers
+    savePtrToCallFrame("LCL", 1),
+    savePtrToCallFrame("ARG", 2),
+    savePtrToCallFrame("THIS", 3),
+    savePtrToCallFrame("THAT ", 4),
+    "@SP",    // set ARG = SP - numberOfArgs
+    "D=M",
+    `@${numberOfArgs}`,
+    "D=D-A",
+    "@ARG",
+    "M=D",
+    "@5",   //  move SP to position next to the end of call frame
+    "D=A",
+    "@SP",
+    "M=M+D",
+    `@${fnName}`,   // goto fn
+    "0;JMP",
+    `(${retAddr})`,   // retAddr
+  ].join("\r\n")
+};
+
+const bootstrapInit = () => {
+  return [
+    "@256", // SP = 256
+    "D=A",
+    "@SP",
+    "M=D",
+    "@1", // LCL = -1
+    "D=-A",
+    "@LCL",
+    "M=D",
+    "@2", // ARG = -2
+    "D=-A",
+    "@ARG",
+    "M=D",
+    "@3", // THIS = -3
+    "D=-A",
+    "@THIS",
+    "M=D",
+    "@4", // THAT = -4
+    "D=-A",
+    "@THAT",
+    "M=D",
+  ].join("\r\n");
+};
+
+const prepareSysInit = () => {
+  return [bootstrapInit(), callFn("Sys.init", 0)].join("\r\n");
+};
 
 const translateInstructions = (lines, fileName) => {
-  return lines.map((instruction) => {
-    if (isBranching(instruction)) {
-      return handleBranching(instruction);
+  let fn = {
+    name: "",
+    numberOfLocals: 0,
+  };
+
+  let translatedInstructions = lines.map((instruction) => {
+    if (instruction.startsWith("call")) {
+      const [, fnName, numberOfArgs] = instruction.split(" ");
+
+      return callFn(fnName, numberOfArgs);
+    } else if (instruction.startsWith("function")) {
+      const [, fnName, numberOfLocals] = instruction.split(" ");
+
+      fn.name = fnName;
+      fn.numberOfLocals = numberOfLocals;
+
+      return declFn(fn);
+    } else if (instruction === "return") {
+      return handleReturn(fn);
+    } else if (
+      instruction.includes("goto") ||
+      instruction.startsWith("label")
+    ) {
+      const [operation, label] = instruction.split(" ");
+
+      return branchingMap[operation](label);
     } else if (instruction in calcOperationsMap) {
       return calcOperationsMap[instruction];
     } else if (instruction in calcOperationsMap.compare) {
@@ -261,6 +440,10 @@ const translateInstructions = (lines, fileName) => {
       return pushPopMap[memorySegment][stackOperation](value, fileName);
     }
   });
+
+  translatedInstructions = [prepareSysInit()].concat(translatedInstructions);
+
+  return translatedInstructions;
 };
 
 const processLines = (lines, fileName) => {
