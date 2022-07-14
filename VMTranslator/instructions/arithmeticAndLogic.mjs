@@ -1,6 +1,6 @@
 import { genId } from "../utils.mjs";
 
-const createCompareHandler = (jumpBitName) => {
+const createCompareHandler = (jumpBitName) => () => {
   const id = genId();
 
   return [
@@ -101,14 +101,15 @@ const arithmeticAndLogicMap = {
     ].join("\r\n");
   },
 
-  not: [
-    "@SP", // SP--; *SP = !(*SP)
-    "M=M-1",
-    "A=M",
-    "M=!M",
-    "@SP", // SP++
-    "M=M+1",
-  ].join("\r\n"),
+  not: () =>
+    [
+      "@SP", // SP--; *SP = !(*SP)
+      "M=M-1",
+      "A=M",
+      "M=!M",
+      "@SP", // SP++
+      "M=M+1",
+    ].join("\r\n"),
 
   eq: createCompareHandler("JEQ"),
   ne: createCompareHandler("JNE"),
