@@ -95,8 +95,10 @@ const DYNAMIC_VARS_START_POS = 16;
 
 // Part 1: remove comments
 
-const removeCommentsAndWhitespaces = (lines) => {
-  return lines.map((line) => line.split("//")[0].trim()).filter(Boolean);
+const removeCommentsAndWhitespaces = (instructions) => {
+  return instructions
+    .map((instr) => instr.split("//")[0].trim())
+    .filter(Boolean);
 };
 
 // Part 2: translate instructions
@@ -180,15 +182,15 @@ const translateInstructions = (instructions) => {
 // Example:
 // 1 ...
 // 2 (LOOP)
-const isGoToVariable = (line) => line.startsWith("(") && line.endsWith(")");
+const isGoToVariable = (instr) => instr.startsWith("(") && instr.endsWith(")");
 
 // Example:
 // 1 ...
 // 2 @19
-const isSimpleVariable = (line) =>
-  line.startsWith("@") && Number(line.slice(1)) >= 0;
+const isSimpleVariable = (instr) =>
+  instr.startsWith("@") && Number(instr.slice(1)) >= 0;
 
-const getGoToVarsTable = (lines) => {
+const getGoToVarsTable = (instructions) => {
   /* 
     Because rows will collapse after we remove goto vars,
     actual location of goto vars will be: currentVarIndex - varsCountBeforeCurrent
@@ -205,13 +207,13 @@ const getGoToVarsTable = (lines) => {
 
       Out: { LOOP: 2, SOME_VAR: 4, END: 5 }  
   */
-  return lines.reduce((acc, line, currentVarIndex) => {
+  return instructions.reduce((acc, instr, currentVarIndex) => {
     const varsCountBeforeCurrent = Object.keys(acc).length;
 
     // Example: (LOOP) --> LOOP
-    const varName = line.slice(1).slice(0, -1);
+    const varName = instr.slice(1).slice(0, -1);
 
-    if (isGoToVariable(line)) {
+    if (isGoToVariable(instr)) {
       return { ...acc, [varName]: currentVarIndex - varsCountBeforeCurrent };
     }
 
@@ -219,16 +221,20 @@ const getGoToVarsTable = (lines) => {
   }, {});
 };
 
-const getDynamicVarsTable = (lines, predefinedVarsTable, gotoVarsTable) => {
-  return lines.reduce((acc, line) => {
-    const varName = line.slice(1);
+const getDynamicVarsTable = (
+  instructions,
+  predefinedVarsTable,
+  gotoVarsTable
+) => {
+  return instructions.reduce((acc, instr) => {
+    const varName = instr.slice(1);
 
     if (
-      !isAInstruction(line) ||
+      !isAInstruction(instr) ||
       varName in acc ||
       varName in predefinedVarsTable ||
       varName in gotoVarsTable ||
-      isSimpleVariable(line)
+      isSimpleVariable(instr)
     ) {
       return acc;
     }
@@ -240,59 +246,50 @@ const getDynamicVarsTable = (lines, predefinedVarsTable, gotoVarsTable) => {
   }, {});
 };
 
-const getVarsTable = (
-  predefinedVarsTable,
-  gotoVarsTable,
-  dynamicVarsTable
-) => ({
-  ...predefinedVarsTable,
-  ...gotoVarsTable,
-  ...dynamicVarsTable,
-});
-
-const removeGoToVars = (lines) => lines.filter((line) => !isGoToVariable(line));
-
-const handleVars = (lines, varsTable) => {
-  return removeGoToVars(lines).map((line) => {
-    if (!isAInstruction(line) || isSimpleVariable(line)) {
-      return line;
-    }
-
-    return "@" + varsTable[line.slice(1)];
-  });
-};
-
-// process each line
-
-const processLines = (lines) => {
-  lines = removeCommentsAndWhitespaces(lines);
-
-  const gotoVarsTable = getGoToVarsTable(lines);
+const getVarsTable = (instructions, predefinedVarsTable) => {
+  const gotoVarsTable = getGoToVarsTable(instructions);
   const dynamicVarsTable = getDynamicVarsTable(
-    lines,
+    instructions,
     predefinedVarsTable,
     gotoVarsTable
   );
-  const varsTable = getVarsTable(
-    predefinedVarsTable,
-    gotoVarsTable,
-    dynamicVarsTable
-  );
 
-  lines = handleVars(lines, varsTable);
-  lines = translateInstructions(lines);
+  return {
+    ...predefinedVarsTable,
+    ...gotoVarsTable,
+    ...dynamicVarsTable,
+  };
+};
 
-  return lines;
+const removeGoToVars = (instructions) =>
+  instructions.filter((instr) => !isGoToVariable(instr));
+
+const handleVars = (instructions, predefinedVarsTable) => {
+  const varsTable = getVarsTable(instructions, predefinedVarsTable);
+
+  return removeGoToVars(instructions).map((instr) => {
+    if (!isAInstruction(instr) || isSimpleVariable(instr)) {
+      return instr;
+    }
+
+    return "@" + varsTable[instr.slice(1)];
+  });
+};
+
+const translateFlow = (instructions) => {
+  instructions = removeCommentsAndWhitespaces(instructions);
+  instructions = handleVars(instructions, predefinedVarsTable);
+  instructions = translateInstructions(instructions);
+
+  return instructions;
 };
 
 export const main = () => {
-  const pathToFile = process.argv.slice(2)[0];
+  const file = process.argv.slice(2)[0];
+  const fileContent = fs.readFileSync(file).toString();
+  const instructions = fileContent.split("\r\n");
 
-  const fileContent = fs.readFileSync(pathToFile).toString();
-  const lines = fileContent.split("\r\n");
+  const translated = translateFlow(instructions).join("\r\n");
 
-  fs.writeFileSync(
-    pathToFile.replace(".asm", ".hack"),
-    processLines(lines).join("\r\n")
-  );
+  fs.writeFileSync(file.replace(".asm", ".hack"), translated);
 };
