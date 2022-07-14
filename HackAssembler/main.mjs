@@ -1,8 +1,4 @@
-// Assembler into binary compiler
-// Example of usage: node translate ./max/Max.asm
-// will emit output into: ./max/Max.hack
-
-const fs = require("fs");
+import fs from "fs";
 
 const compBitsMap = {
   0: {
@@ -118,20 +114,22 @@ const translateA = (instr) => {
   );
 };
 
+// A=M+D;JMP --> M+D
 const getCompPart = (instr) => {
-  let destPart = "";
+  let compPart = null;
 
   if (instr.includes("=")) {
-    destPart = instr.split("=")[1];
+    compPart = instr.split("=")[1];
   }
 
   if (instr.includes(";")) {
-    destPart = instr.split(";")[0];
+    compPart = instr.split(";")[0];
   }
 
-  return destPart;
+  return compPart;
 };
 
+// A=M+D;JMP --> A
 const getDestPart = (instr) => {
   let destPart = null;
 
@@ -142,6 +140,7 @@ const getDestPart = (instr) => {
   return destPart;
 };
 
+// A=M+D;JMP --> JMP
 const getJumpPart = (instr) => {
   let jumpPart = null;
 
@@ -286,7 +285,7 @@ const processLines = (lines) => {
   return lines;
 };
 
-const main = () => {
+export const main = () => {
   const pathToFile = process.argv.slice(2)[0];
 
   const fileContent = fs.readFileSync(pathToFile).toString();
@@ -297,5 +296,3 @@ const main = () => {
     processLines(lines).join("\r\n")
   );
 };
-
-main();
