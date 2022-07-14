@@ -24,7 +24,7 @@ D=M
 D=D+A
 @temp_ptr
 M=D
-@Sys.init$ret.28a7ff103fefcbdad86c2088c69536f3
+@Sys.init$ret.183fa589f72200c4cf4cdc7c65649600
 D=A
 @temp_ptr
 A=M
@@ -85,7 +85,7 @@ D=A
 M=M+D
 @Sys.init
 0;JMP
-(Sys.init$ret.28a7ff103fefcbdad86c2088c69536f3)
+(Sys.init$ret.183fa589f72200c4cf4cdc7c65649600)
 (Sys.init)
 @SP
 D=M
@@ -127,7 +127,7 @@ D=M
 D=D+A
 @temp_ptr
 M=D
-@Sys.main$ret.a76b60f98a029ea252529a66c6e7a451
+@Sys.main$ret.6d2a890da5b50d300340fa17e0d43b6a
 D=A
 @temp_ptr
 A=M
@@ -188,7 +188,7 @@ D=A
 M=M+D
 @Sys.main
 0;JMP
-(Sys.main$ret.a76b60f98a029ea252529a66c6e7a451)
+(Sys.main$ret.6d2a890da5b50d300340fa17e0d43b6a)
 @5
 D=A
 @1
@@ -338,7 +338,7 @@ D=M
 D=D+A
 @temp_ptr
 M=D
-@Sys.add12$ret.50bf63aefdfd65edde6a2642a0155f32
+@Sys.add12$ret.3b4efa0dd98fcd49a7d473c2727678f2
 D=A
 @temp_ptr
 A=M
@@ -399,7 +399,7 @@ D=A
 M=M+D
 @Sys.add12
 0;JMP
-(Sys.add12$ret.50bf63aefdfd65edde6a2642a0155f32)
+(Sys.add12$ret.3b4efa0dd98fcd49a7d473c2727678f2)
 @5
 D=A
 @0

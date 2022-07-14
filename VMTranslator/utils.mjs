@@ -26,7 +26,7 @@ const walk = function (dir, done) {
   });
 };
 
-const asyncWalk = (dirPath) => {
+export const asyncWalk = (dirPath) => {
   return new Promise((resolve, reject) => {
     return walk(dirPath, (err, result) => {
       return err ? reject(err) : resolve(result);
@@ -34,25 +34,16 @@ const asyncWalk = (dirPath) => {
   });
 };
 
-export const gatherVmFilesContentFromDir = (dirPath) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const filesInDir = await asyncWalk(dirPath);
-      const vmFiles = filesInDir.filter((file) => file.endsWith(".vm"));
-
-      const vmFilesContent = vmFiles.map((file) => {
-        return fs.readFileSync(file).toString();
-      });
-
-      resolve(vmFilesContent);
-    } catch (error) {
-      reject(error);
-    }
-  });
-};
-
 export const genId = () => crypto.randomBytes(16).toString("hex");
 
 export const range = (n) => {
   return Array.apply(null, { length: n }).map(Number.call, Number);
+};
+
+export const isDir = (path) => {
+  try {
+    return fs.lstatSync(path).isDirectory();
+  } catch (e) {
+    return false;
+  }
 };
