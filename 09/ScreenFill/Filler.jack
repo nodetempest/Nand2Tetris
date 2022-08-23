@@ -1,0 +1,40 @@
+class Filler {
+  function void run() {
+    var boolean color;
+    var int i;
+
+    let color = true;
+    do Screen.setColor(color);
+
+    let i = 0;
+
+    while (true) {
+      if (i = 250){
+        let color = Utils.invert(color);
+        do Screen.setColor(color);
+        let i = 0;
+      }
+
+      do Filler.drawRandCircle();
+      do Sys.wait(25);
+      let i = i + 1;
+    }
+
+    return;
+  }
+
+  function void drawRandCircle() {
+    var int x;
+    var int y;
+    var int r;
+
+
+    let r = Utils.randRange(5, 35);
+    let x = Utils.randRange(r + 1, 511 - r);
+    let y = Utils.randRange(r + 1, 255 - r);
+
+    do Screen.drawCircle(x, y, r);
+
+    return;
+  }
+}
