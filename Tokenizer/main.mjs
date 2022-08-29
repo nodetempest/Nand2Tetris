@@ -1,8 +1,7 @@
 import path from "path";
+import { tokenizer } from "./Tokenizer.mjs";
 
-import { Tokenizer } from "./Tokenizer.mjs";
 import { asyncWalk, isDir } from "./utils.mjs";
-import { FileInput } from "./FileInput.mjs";
 
 export const main = async () => {
   const fileOrDir = path.resolve(process.argv.slice(2)[0]);
@@ -21,10 +20,8 @@ export const main = async () => {
   const file = files[0];
 
   if (file) {
-    const fin = new FileInput(file);
-    const tokenizer = new Tokenizer(fin);
-    tokenizer.advance();
-    const token = tokenizer.getToken();
+    const getNextToken = tokenizer(file);
+    const token = getNextToken();
     console.log(token);
   }
 };
