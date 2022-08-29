@@ -24,4 +24,8 @@ export class FIFOBuffer {
   flush() {
     this.buffer = [];
   }
+
+  toString() {
+    return this.getBuffer().join("");
+  }
 }

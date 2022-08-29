@@ -25,5 +25,6 @@ export const main = async () => {
     const tokenizer = new Tokenizer(fin);
     tokenizer.advance();
     const token = tokenizer.getToken();
+    console.log(token);
   }
 };
