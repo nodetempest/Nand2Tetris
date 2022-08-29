@@ -21,7 +21,10 @@ export const main = async () => {
 
   if (file) {
     const getNextToken = tokenizer(file);
-    const token = getNextToken();
-    console.log(token);
+    let token = null;
+
+    while ((token = getNextToken())) {
+      console.log(token);
+    }
   }
 };
