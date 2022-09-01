@@ -87,7 +87,7 @@ export const tokenizer = (file) => {
   fileContent = fileContent.replace(/(\/\/.*)|(\/\*[\s\S]*?\*\/)/g, "");
 
   const tokenValues = fileContent.match(
-    /".*"|[{}()\[\]\.,;+\-\*\/&|<>=~]|\w+/g
+    /".*"|[{}()\[\]\.,;+\-\*\/&|<>=~]|\b[_a-zA-Z]\w*|\d+/g
   );
 
   let pos = 0;
