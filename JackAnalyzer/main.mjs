@@ -1,6 +1,8 @@
+import fs from "fs";
 import path from "path";
-import { tokenizer } from "./Tokenizer.mjs";
+import xml2js from "xml2js";
 
+import { tokenizer } from "./Tokenizer.mjs";
 import { asyncWalk, isDir } from "./utils.mjs";
 
 export const main = async () => {
@@ -17,14 +19,21 @@ export const main = async () => {
     files = [fileOrDir];
   }
 
-  const file = files[0];
-
-  if (file) {
+  files.forEach((file) => {
     const getNextToken = tokenizer(file);
+    const tokens = [];
     let token = null;
 
     while ((token = getNextToken())) {
-      console.log(token);
+      tokens.push({ [token.type]: ` ${token.value} ` });
     }
-  }
+
+    const builder = new xml2js.Builder({ headless: true });
+    const xml = builder.buildObject({ tokens }) + "\r\n";
+
+    const source = path.parse(file);
+    const targetFile = path.resolve(source.dir, source.name + "T.xml");
+
+    fs.writeFileSync(targetFile, xml);
+  });
 };
