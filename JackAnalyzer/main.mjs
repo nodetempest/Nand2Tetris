@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import xml2js from "xml2js";
 
-import { tokenizer } from "./Tokenizer.mjs";
+import { Tokenizer } from "./Tokenizer.mjs";
 import { asyncWalk, isDir } from "./utils.mjs";
 
 export const main = async () => {
@@ -19,17 +19,19 @@ export const main = async () => {
     files = [fileOrDir];
   }
 
-  files.forEach((file) => {
-    const getNextToken = tokenizer(file);
-    const tokens = [];
-    let token = null;
+  const xmlBuilder = new xml2js.Builder({ headless: true });
 
-    while ((token = getNextToken())) {
+  files.forEach((file) => {
+    const tokenizer = new Tokenizer(file);
+    const tokens = [];
+
+    while (tokenizer.hasMoreTokens()) {
+      const token = tokenizer.getToken();
       tokens.push({ [token.type]: ` ${token.value} ` });
+      tokenizer.advance();
     }
 
-    const builder = new xml2js.Builder({ headless: true });
-    const xml = builder.buildObject({ tokens }) + "\r\n";
+    const xml = xmlBuilder.buildObject({ tokens }) + "\r\n";
 
     const source = path.parse(file);
     const targetFile = path.resolve(source.dir, source.name + "T.xml");

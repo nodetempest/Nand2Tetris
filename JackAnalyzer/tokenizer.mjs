@@ -1,108 +1,117 @@
 import fs from "fs";
 
-export const symbols = [
-  "{",
-  "}",
-  "(",
-  ")",
-  "[",
-  "]",
-  ".",
-  ",",
-  ";",
-  "+",
-  "-",
-  "*",
-  "/",
-  "&",
-  "|",
-  "<",
-  ">",
-  "=",
-  "~",
-];
+export class Tokenizer {
+  static symbols = [
+    "{",
+    "}",
+    "(",
+    ")",
+    "[",
+    "]",
+    ".",
+    ",",
+    ";",
+    "+",
+    "-",
+    "*",
+    "/",
+    "&",
+    "|",
+    "<",
+    ">",
+    "=",
+    "~",
+  ];
 
-export const keywords = [
-  "class",
-  "constructor",
-  "function",
-  "method",
-  "field",
-  "static",
-  "var",
-  "int",
-  "char",
-  "boolean",
-  "void",
-  "true",
-  "false",
-  "null",
-  "this",
-  "let",
-  "do",
-  "if",
-  "else",
-  "while",
-  "return",
-];
+  static keywords = [
+    "class",
+    "constructor",
+    "function",
+    "method",
+    "field",
+    "static",
+    "var",
+    "int",
+    "char",
+    "boolean",
+    "void",
+    "true",
+    "false",
+    "null",
+    "this",
+    "let",
+    "do",
+    "if",
+    "else",
+    "while",
+    "return",
+  ];
 
-export const tokenTypes = {
-  keyword: "keyword",
-  symbol: "symbol",
-  integerConstant: "integerConstant",
-  stringConstant: "stringConstant",
-  identifier: "identifier",
-};
+  static tokenTypes = {
+    keyword: "keyword",
+    symbol: "symbol",
+    integerConstant: "integerConstant",
+    stringConstant: "stringConstant",
+    identifier: "identifier",
+  };
 
-export const isSymbol = (value) => {
-  return symbols.includes(value);
-};
+  static isSymbol(value) {
+    return Tokenizer.symbols.includes(value);
+  }
 
-export const isKeyword = (value) => {
-  return keywords.includes(value);
-};
+  static isKeyword(value) {
+    return Tokenizer.keywords.includes(value);
+  }
 
-export const isStringConstant = (value) => {
-  return value.startsWith('"') && value.endsWith('"');
-};
+  static isStringConstant(value) {
+    return value.startsWith('"') && value.endsWith('"');
+  }
 
-export const isIntegerConstant = (value) => {
-  return !isNaN(Number(value));
-};
+  static isIntegerConstant(value) {
+    return !isNaN(Number(value));
+  }
 
-export const getTokenType = (value) => {
-  return [
-    [isStringConstant, tokenTypes.stringConstant],
-    [isIntegerConstant, tokenTypes.integerConstant],
-    [isSymbol, tokenTypes.symbol],
-    [isKeyword, tokenTypes.keyword],
-    [() => true, tokenTypes.identifier],
-  ].find(([validate]) => validate(value))[1];
-};
+  static getTokenType(value) {
+    return [
+      [Tokenizer.isStringConstant, Tokenizer.tokenTypes.stringConstant],
+      [Tokenizer.isIntegerConstant, Tokenizer.tokenTypes.integerConstant],
+      [Tokenizer.isSymbol, Tokenizer.tokenTypes.symbol],
+      [Tokenizer.isKeyword, Tokenizer.tokenTypes.keyword],
+      [() => true, Tokenizer.tokenTypes.identifier],
+    ].find(([validate]) => validate(value))[1];
+  }
 
-export const tokenizer = (file) => {
-  let fileContent = fs.readFileSync(file).toString("utf-8");
+  tokenValues = [];
+  pos = 0;
 
-  // clear comments
-  fileContent = fileContent.replace(/(\/\/.*)|(\/\*[\s\S]*?\*\/)/g, "");
+  constructor(file) {
+    let fileContent = fs.readFileSync(file).toString("utf-8");
 
-  const tokenValues = fileContent.match(
-    /".*"|[{}()\[\]\.,;+\-\*\/&|<>=~]|\b[_a-zA-Z]\w*|\d+/g
-  );
+    // clear comments
+    fileContent = fileContent.replace(/(\/\/.*)|(\/\*[\s\S]*?\*\/)/g, "");
 
-  let pos = 0;
+    this.tokenValues = fileContent.match(
+      /".*"|[{}()\[\]\.,;+\-\*\/&|<>=~]|\b[_a-zA-Z]\w*|\d+/g
+    );
+  }
 
-  const isEmpty = () => pos >= tokenValues.length;
+  advance() {
+    this.pos++;
+  }
 
-  const getNextToken = () => {
-    if (isEmpty()) {
+  hasMoreTokens() {
+    return this.pos < this.tokenValues.length;
+  }
+
+  getToken() {
+    if (!this.hasMoreTokens()) {
       return null;
     } else {
-      let tokenValue = tokenValues[pos++];
-      const tokenType = getTokenType(tokenValue);
+      let tokenValue = this.tokenValues[this.pos];
+      const tokenType = Tokenizer.getTokenType(tokenValue);
 
       // '"hello"' --> 'hello'
-      if (tokenType === tokenTypes.stringConstant) {
+      if (tokenType === Tokenizer.tokenTypes.stringConstant) {
         tokenValue = tokenValue.slice(1, -1);
       }
 
@@ -111,7 +120,5 @@ export const tokenizer = (file) => {
         type: tokenType,
       };
     }
-  };
-
-  return getNextToken;
-};
+  }
+}
