@@ -40,3 +40,5 @@ export const asyncWalk = (dirPath) => {
     });
   });
 };
+
+export const last = (arr) => arr[arr.length - 1];
