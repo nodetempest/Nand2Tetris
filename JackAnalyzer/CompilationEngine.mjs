@@ -8,6 +8,7 @@ import { last } from "./utils.mjs";
 export class CompilationEngine {
   static classVarDecKeywords = ["static", "field"];
   static subroutineDecKeywords = ["constructor", "function", "method"];
+  static statementKeywords = ["let", "if", "while", "do", "return"];
 
   tree = { class: [] };
   nodes = [this.tree.class];
@@ -148,6 +149,8 @@ export class CompilationEngine {
       this.compileVarDec();
     }
 
+    this.compileStatements();
+
     this.eat("}");
     this.backToParentNode();
   }
@@ -158,6 +161,46 @@ export class CompilationEngine {
     this.eat(this.tokenizer.getToken().value);
     this.eat(this.tokenizer.getToken().value);
     this.eat(";");
+    this.backToParentNode();
+  }
+
+  compileStatements() {
+    this.createAndSetNode("statements");
+
+    while (
+      CompilationEngine.statementKeywords.includes(
+        this.tokenizer.getToken().value
+      )
+    ) {
+      const tokenValue = this.tokenizer.getToken().value;
+      if (tokenValue === "let") {
+        this.compileLet();
+      }
+    }
+
+    this.backToParentNode();
+  }
+
+  compileLet() {
+    this.createAndSetNode("letStatement");
+    this.eat("let");
+    this.eat(this.tokenizer.getToken().value);
+    this.eat("=");
+    this.compileExpression();
+    this.eat(";");
+
+    this.backToParentNode();
+  }
+
+  compileExpression() {
+    this.createAndSetNode("expression");
+    this.compileTerm();
+    this.backToParentNode();
+  }
+
+  compileTerm() {
+    this.createAndSetNode("term");
+    this.eat(this.tokenizer.getToken().value);
     this.backToParentNode();
   }
 }
