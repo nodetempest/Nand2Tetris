@@ -117,9 +117,7 @@ export class CompilationEngine {
     this.eat("(");
     this.complieParameterList();
     this.eat(")");
-    this.eat("{");
     this.complieSubroutineBody();
-    this.eat("}");
     this.backToParentNode();
   }
 
@@ -144,6 +142,22 @@ export class CompilationEngine {
 
   complieSubroutineBody() {
     this.createAndSetNode("subroutineBody");
+    this.eat("{");
+
+    while (this.tokenizer.getToken().value === "var") {
+      this.compileVarDec();
+    }
+
+    this.eat("}");
+    this.backToParentNode();
+  }
+
+  compileVarDec() {
+    this.createAndSetNode("varDec");
+    this.eat("var");
+    this.eat(this.tokenizer.getToken().value);
+    this.eat(this.tokenizer.getToken().value);
+    this.eat(";");
     this.backToParentNode();
   }
 }
