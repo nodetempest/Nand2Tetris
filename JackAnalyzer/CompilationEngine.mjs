@@ -21,7 +21,7 @@ export class CompilationEngine {
       headless: true,
       renderOpts: {
         pretty: true,
-        indent: " ",
+        indent: "  ",
         newline: "\r\n",
         allowEmpty: true,
       },
@@ -125,7 +125,21 @@ export class CompilationEngine {
 
   complieParameterList() {
     this.createAndSetNode("parameterList");
-    this.backToParentNode();
+
+    const isEmpty = this.tokenizer.getToken().value === ")";
+
+    if (!isEmpty) {
+      this.eat(this.tokenizer.getToken().value);
+      this.eat(this.tokenizer.getToken().value);
+
+      while (this.tokenizer.getToken().value === ",") {
+        this.eat(",");
+        this.eat(this.tokenizer.getToken().value);
+        this.eat(this.tokenizer.getToken().value);
+      }
+    }
+
+    return this.backToParentNode();
   }
 
   complieSubroutineBody() {
