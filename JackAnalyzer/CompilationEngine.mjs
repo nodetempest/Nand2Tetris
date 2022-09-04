@@ -2,6 +2,7 @@ import xml2js from "xml2js";
 import fs from "fs";
 
 import { Tokenizer } from "./Tokenizer.mjs";
+import { CompilationEngineError } from "./errors.mjs";
 
 export class CompilationEngine {
   tree = { class: [] };
@@ -32,13 +33,15 @@ export class CompilationEngine {
     if (tokenValue === null && currentToken === null) {
       return;
     } else if (tokenValue === null && this.tokenizer.hasMoreTokens()) {
-      throw new Error(
+      throw new CompilationEngineError(
         `Expected EOF but recieved token: "${currentToken.value}", ${currentToken.type}`
       );
     }
 
     if (currentToken.value !== tokenValue) {
-      throw new Error(`Invalid token: "${currentToken.value}"`);
+      throw new CompilationEngineError(
+        `Invalid token: "${currentToken.value}"`
+      );
     } else {
       this.currentRoot.push({ [currentToken.type]: currentToken.value });
       this.tokenizer.advance();

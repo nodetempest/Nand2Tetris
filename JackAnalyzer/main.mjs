@@ -1,6 +1,7 @@
 import path from "path";
 
 import { CompilationEngine } from "./CompilationEngine.mjs";
+import { CompilationEngineError } from "./errors.mjs";
 import { asyncWalk, isDir } from "./utils.mjs";
 
 export const main = async () => {
@@ -21,6 +22,14 @@ export const main = async () => {
     const source = path.parse(file);
     const targetFile = path.resolve(source.dir, source.name + ".xml");
 
-    new CompilationEngine(file, targetFile);
+    try {
+      new CompilationEngine(file, targetFile);
+    } catch (error) {
+      if (error instanceof CompilationEngineError) {
+        console.log(`Compilation error:\r\n${error.message}`);
+      } else {
+        throw error;
+      }
+    }
   });
 };
