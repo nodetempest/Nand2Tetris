@@ -185,10 +185,16 @@ export class CompilationEngine {
     this.createAndSetNode("letStatement");
     this.eat("let");
     this.eat(this.tokenizer.getToken().value);
+
+    if (this.tokenizer.getToken().value === "[") {
+      this.eat("[");
+      this.compileExpression();
+      this.eat("]");
+    }
+
     this.eat("=");
     this.compileExpression();
     this.eat(";");
-
     this.backToParentNode();
   }
 
