@@ -52,5 +52,3 @@ export const asyncWalk = (dirPath) => {
     });
   });
 };
-
-export const isWhitespace = (char) => /\s/.test(char);
