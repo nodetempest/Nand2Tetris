@@ -180,6 +180,8 @@ export class CompilationEngine {
         this.compileIf();
       } else if (tokenValue === "while") {
         this.compileWhile();
+      } else if (tokenValue === "do") {
+        this.compileDo();
       }
     }
 
@@ -219,6 +221,8 @@ export class CompilationEngine {
       this.compileStatements();
       this.eat("}");
     }
+
+    this.backToParentNode();
   }
 
   compileWhile() {
@@ -230,6 +234,24 @@ export class CompilationEngine {
     this.eat("{");
     this.compileStatements();
     this.eat("}");
+    this.backToParentNode();
+  }
+
+  compileDo() {
+    this.createAndSetNode("doStatement");
+    this.eat("do");
+    this.eat(this.tokenizer.getToken().value);
+
+    if (this.tokenizer.getToken().value === ".") {
+      this.eat(".");
+      this.eat(this.tokenizer.getToken().value);
+    }
+
+    this.eat("(");
+    this.compileExpressionList();
+    this.eat(")");
+    this.eat(";");
+    this.backToParentNode();
   }
 
   compileExpression() {
@@ -241,6 +263,23 @@ export class CompilationEngine {
   compileTerm() {
     this.createAndSetNode("term");
     this.eat(this.tokenizer.getToken().value);
+    this.backToParentNode();
+  }
+
+  compileExpressionList() {
+    this.createAndSetNode("expressionList");
+
+    if (this.tokenizer.getToken().value === ")") {
+      return this.backToParentNode();
+    }
+
+    this.compileExpression();
+
+    while (this.tokenizer.getToken().value === ",") {
+      this.eat(",");
+      this.compileExpression();
+    }
+
     this.backToParentNode();
   }
 }
