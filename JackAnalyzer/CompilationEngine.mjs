@@ -182,6 +182,8 @@ export class CompilationEngine {
         this.compileWhile();
       } else if (tokenValue === "do") {
         this.compileDo();
+      } else if (tokenValue === "return") {
+        this.compileReturn();
       }
     }
 
@@ -250,6 +252,18 @@ export class CompilationEngine {
     this.eat("(");
     this.compileExpressionList();
     this.eat(")");
+    this.eat(";");
+    this.backToParentNode();
+  }
+
+  compileReturn() {
+    this.createAndSetNode("returnStatement");
+    this.eat("return");
+
+    if (this.tokenizer.getToken().value !== ";") {
+      this.compileExpression();
+    }
+
     this.eat(";");
     this.backToParentNode();
   }
