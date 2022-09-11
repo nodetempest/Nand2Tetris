@@ -29,7 +29,7 @@ export class CompilationEngine {
     });
     const xml = xmlBuilder.buildObject(this.tree);
 
-    fs.writeFileSync(outputFile, xml + "\r\n");
+    fs.writeFileSync(outputFile, xml);
   }
 
   eat(tokenValue) {
