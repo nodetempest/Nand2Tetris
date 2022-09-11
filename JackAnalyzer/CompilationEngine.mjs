@@ -178,6 +178,8 @@ export class CompilationEngine {
         this.compileLet();
       } else if (tokenValue === "if") {
         this.compileIf();
+      } else if (tokenValue === "while") {
+        this.compileWhile();
       }
     }
 
@@ -217,6 +219,17 @@ export class CompilationEngine {
       this.compileStatements();
       this.eat("}");
     }
+  }
+
+  compileWhile() {
+    this.createAndSetNode("whileStatement");
+    this.eat("while");
+    this.eat("(");
+    this.compileExpression();
+    this.eat(")");
+    this.eat("{");
+    this.compileStatements();
+    this.eat("}");
   }
 
   compileExpression() {
