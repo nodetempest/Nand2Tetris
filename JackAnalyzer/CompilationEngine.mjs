@@ -173,8 +173,11 @@ export class CompilationEngine {
       )
     ) {
       const tokenValue = this.tokenizer.getToken().value;
+
       if (tokenValue === "let") {
         this.compileLet();
+      } else if (tokenValue === "if") {
+        this.compileIf();
       }
     }
 
@@ -196,6 +199,24 @@ export class CompilationEngine {
     this.compileExpression();
     this.eat(";");
     this.backToParentNode();
+  }
+
+  compileIf() {
+    this.createAndSetNode("ifStatement");
+    this.eat("if");
+    this.eat("(");
+    this.compileExpression();
+    this.eat(")");
+    this.eat("{");
+    this.compileStatements();
+    this.eat("}");
+
+    if (this.tokenizer.getToken().value === "else") {
+      this.eat("else");
+      this.eat("{");
+      this.compileStatements();
+      this.eat("}");
+    }
   }
 
   compileExpression() {
