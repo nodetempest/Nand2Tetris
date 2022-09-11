@@ -46,7 +46,9 @@ export class CompilationEngine {
     if (currentToken.value !== tokenValue) {
       throw new CompilationEngineError(`Invalid token: ${currentToken.value}`);
     } else {
-      this.getCurrentNode().push({ [currentToken.type]: currentToken.value });
+      this.getCurrentNode().push({
+        [currentToken.type]: ` ${currentToken.value} `,
+      });
       this.tokenizer.advance();
     }
   }
