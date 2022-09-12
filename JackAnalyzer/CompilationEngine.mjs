@@ -9,6 +9,9 @@ export class CompilationEngine {
   static classVarDecKeywords = ["static", "field"];
   static subroutineDecKeywords = ["constructor", "function", "method"];
   static statementKeywords = ["let", "if", "while", "do", "return"];
+  static op = ["+", "-", "*", "/", "&", "|", ">", "<", "="];
+  static unaryOp = ["~", "-"];
+  static keywordConstant = ["true", "false", "null", "this"];
 
   tree = { class: [] };
   nodes = [this.tree.class];
@@ -162,6 +165,12 @@ export class CompilationEngine {
     this.eat("var");
     this.eat(this.tokenizer.getToken().value);
     this.eat(this.tokenizer.getToken().value);
+
+    while (this.tokenizer.getToken().value === ",") {
+      this.eat(",");
+      this.eat(this.tokenizer.getToken().value);
+    }
+
     this.eat(";");
     this.backToParentNode();
   }
@@ -273,12 +282,51 @@ export class CompilationEngine {
   compileExpression() {
     this.createAndSetNode("expression");
     this.compileTerm();
+
+    if (CompilationEngine.op.includes(this.tokenizer.getToken().value)) {
+      this.eat(this.tokenizer.getToken().value);
+      this.compileTerm();
+    }
+
     this.backToParentNode();
   }
 
   compileTerm() {
     this.createAndSetNode("term");
+
+    if (this.tokenizer.getToken().value === "(") {
+      this.eat("(");
+      this.compileExpression();
+      this.eat(")");
+      this.backToParentNode();
+      return;
+    }
+
+    if (CompilationEngine.unaryOp.includes(this.tokenizer.getToken().value)) {
+      this.eat(this.tokenizer.getToken().value);
+      this.compileTerm();
+      this.backToParentNode();
+      return;
+    }
+
     this.eat(this.tokenizer.getToken().value);
+
+    if (this.tokenizer.getToken().value === "(") {
+      this.eat("(");
+      this.compileExpressionList();
+      this.eat(")");
+    } else if (this.tokenizer.getToken().value === "[") {
+      this.eat("[");
+      this.compileExpression();
+      this.eat("]");
+    } else if (this.tokenizer.getToken().value === ".") {
+      this.eat(".");
+      this.eat(this.tokenizer.getToken().value);
+      this.eat("(");
+      this.compileExpressionList();
+      this.eat(")");
+    }
+
     this.backToParentNode();
   }
 
@@ -286,7 +334,8 @@ export class CompilationEngine {
     this.createAndSetNode("expressionList");
 
     if (this.tokenizer.getToken().value === ")") {
-      return this.backToParentNode();
+      this.backToParentNode();
+      return;
     }
 
     this.compileExpression();
