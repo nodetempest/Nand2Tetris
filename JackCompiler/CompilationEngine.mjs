@@ -1,8 +1,14 @@
 import fs from "fs";
+import { CompilationEngine as JackAnalyzer } from "../JackAnalyzer/CompilationEngine.mjs";
 
 export class CompilationEngine {
+  tree = {};
+
   constructor(inputFile, outputFile) {
-    fs.writeFileSync(outputFile, "");
+    const analizer = new JackAnalyzer(inputFile);
+
+    this.tree = analizer.compile();
+    fs.writeFileSync(outputFile, JSON.stringify(this.tree, null, 2));
   }
 
   compileClass() {}
