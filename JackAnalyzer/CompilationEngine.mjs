@@ -1,6 +1,3 @@
-import xml2js from "xml2js";
-import fs from "fs";
-
 import { Tokenizer } from "./Tokenizer.mjs";
 import { CompilationEngineError } from "./errors.mjs";
 import { last } from "./utils.mjs";
@@ -17,22 +14,13 @@ export class CompilationEngine {
   nodes = [this.tree.class];
   tokenizer;
 
-  constructor(inputFile, outputFile) {
+  constructor(inputFile) {
     this.tokenizer = new Tokenizer(inputFile);
+  }
+
+  compile() {
     this.compileClass();
-
-    const xmlBuilder = new xml2js.Builder({
-      headless: true,
-      renderOpts: {
-        pretty: true,
-        indent: "  ",
-        newline: "\r\n",
-        allowEmpty: true,
-      },
-    });
-    const xml = xmlBuilder.buildObject(this.tree);
-
-    fs.writeFileSync(outputFile, xml);
+    return this.tree;
   }
 
   eat(tokenValue) {
