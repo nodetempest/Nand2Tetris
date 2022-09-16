@@ -29,4 +29,22 @@ export class NLRTreeBrowser {
   getCurrentNode() {
     return this.hasMoreNodes() ? this.nodes[this.pos] : null;
   }
+
+  getCurrentNodeType() {
+    const node = this.getCurrentNode();
+    if (node === null) {
+      return node;
+    }
+
+    return Object.keys(node)[0];
+  }
+
+  getCurrentNodeLeaves() {
+    const node = this.getCurrentNode();
+    if (node === null) {
+      return node;
+    }
+
+    return Object.values(node)[1];
+  }
 }
