@@ -1,7 +1,8 @@
 import fs from "fs";
 import { SymbolTable } from "./SymbolTable.mjs";
+import { NLRTreeBrowser } from "./NLRTreeBrowser.mjs";
 import { VMWriter } from "./VMWriter.mjs";
-import { NLRTreeTraversal } from "./utils.mjs";
+
 import { CompilationEngine as JackAnalyzer } from "../JackAnalyzer/CompilationEngine.mjs";
 
 export class CompilationEngine {
@@ -10,9 +11,7 @@ export class CompilationEngine {
 
     const analizer = new JackAnalyzer(inputFile);
     const analizerTree = analizer.compile();
-    const analizerNodes = [];
-    NLRTreeTraversal(analizerTree, (node) => analizerNodes.push(node));
-    this.analizerNodes = analizerNodes;
+    this.treeBrowser = new NLRTreeBrowser(analizerTree);
 
     fs.writeFileSync(outputFile, JSON.stringify(analizerTree, null, 2));
   }

@@ -42,13 +42,3 @@ export const asyncWalk = (dirPath) => {
 };
 
 export const last = (arr) => arr[arr.length - 1];
-
-export const NLRTreeTraversal = (node, onNodeVisit) => {
-  onNodeVisit(node);
-
-  const leaves = Object.values(node)[0];
-
-  if (Array.isArray(leaves)) {
-    leaves.forEach((leaf) => NLRTreeTraversal(leaf, onNodeVisit));
-  }
-};
