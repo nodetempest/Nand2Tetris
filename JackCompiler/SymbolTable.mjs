@@ -1,4 +1,4 @@
-export class SymboTable {
+export class SymbolTable {
   static kind = {
     STATIC: "STATIC",
     FIELD: "FIELD",

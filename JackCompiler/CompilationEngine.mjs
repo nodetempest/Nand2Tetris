@@ -1,13 +1,15 @@
 import fs from "fs";
+import { SymbolTable } from "./SymbolTable.mjs";
+import { VMWriter } from "./VMWriter.mjs";
 import { CompilationEngine as JackAnalyzer } from "../JackAnalyzer/CompilationEngine.mjs";
 
 export class CompilationEngine {
-  tree = {};
-
   constructor(inputFile, outputFile) {
-    const analizer = new JackAnalyzer(inputFile);
+    this.writer = new VMWriter(outputFile);
 
+    const analizer = new JackAnalyzer(inputFile);
     this.tree = analizer.compile();
+
     fs.writeFileSync(outputFile, JSON.stringify(this.tree, null, 2));
   }
 
