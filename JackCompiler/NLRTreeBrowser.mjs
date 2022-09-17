@@ -5,7 +5,7 @@ export class NLRTreeBrowser {
     const leaves = Object.values(node)[0];
 
     if (Array.isArray(leaves)) {
-      leaves.forEach((leaf) => traverse(leaf, onNodeVisit));
+      leaves.forEach((leaf) => NLRTreeBrowser.traverse(leaf, onNodeVisit));
     }
   };
 
@@ -13,7 +13,7 @@ export class NLRTreeBrowser {
 
   constructor(tree) {
     const nodes = [];
-    NLRTreeBrowser.traverse(tree, (node) => analizerNodes.push(node));
+    NLRTreeBrowser.traverse(tree, (node) => nodes.push(node));
 
     this.nodes = nodes;
   }
