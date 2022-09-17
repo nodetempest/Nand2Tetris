@@ -101,9 +101,7 @@ export class CompilationEngine {
     this.eat(Analizer.nonTerminalKeywords.classVarDec);
 
     const kind = this.readValue();
-
     const type = this.readValue();
-
     let name = this.readValue();
 
     this.classSymbolTable.define(name, type, kind);
@@ -121,9 +119,30 @@ export class CompilationEngine {
 
   complieParameterList() {}
 
-  complieSubroutineBody() {}
+  complieSubroutineBody() {
+    this.eatType(Analizer.nonTerminalKeywords.subroutineBody);
+    this.eatValue("{");
 
-  compileVarDec() {}
+    while (this.getCurrentNodeType() === Analizer.nonTerminalKeywords.varDec) {
+      this.compileVarDec();
+    }
+
+    this.compileStatements();
+
+    this.eatValue("}");
+  }
+
+  compileVarDec() {
+    this.eatType(Analizer.nonTerminalKeywords.varDec);
+
+    const kind = this.readValue();
+    const type = this.readValue();
+    const name = this.readValue();
+
+    this.classSymbolTable.define(name, type, kind);
+
+    this.eatValue(";");
+  }
 
   compileStatements() {}
 
