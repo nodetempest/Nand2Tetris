@@ -1,9 +1,9 @@
 export class SymbolTable {
   static kind = {
-    STATIC: "STATIC",
-    FIELD: "FIELD",
-    ARG: "ARG",
-    VAR: "VAR",
+    static: "static",
+    field: "field",
+    arg: "arg",
+    var: "var",
   };
 
   table = {};

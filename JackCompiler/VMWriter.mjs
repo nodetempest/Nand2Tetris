@@ -2,26 +2,26 @@ import fs from "fs";
 
 export class VMWriter {
   static segment = {
-    CONST: "CONST",
-    ARG: "ARG",
-    LOCAL: "LOCAL",
-    STATIC: "STATIC",
-    THIS: "THIS",
-    THAT: "THAT",
-    POINTER: "POINTER",
-    TEMP: "TEMP",
+    const: "const",
+    arg: "arg",
+    local: "local",
+    static: "static",
+    this: "this",
+    that: "that",
+    pointer: "pointer",
+    tmep: "tmep",
   };
 
   static commands = {
-    ADD: "ADD",
-    SUB: "SUB",
-    NEG: "NEG",
-    EQ: "EQ",
-    GT: "GT",
-    LT: "LT",
-    AND: "AND",
-    OR: "OR",
-    NOT: "NOT",
+    add: "add",
+    sub: "sub",
+    neg: "neg",
+    eq: "eq",
+    gt: "gt",
+    lt: "lt",
+    and: "and",
+    or: "or",
+    not: "not",
   };
 
   constructor(outputFile) {
@@ -33,15 +33,15 @@ export class VMWriter {
   }
 
   writePush(segment, index) {
-    this.write(`push ${segment.toLowerCase()} ${index}`);
+    this.write(`push ${segment} ${index}`);
   }
 
   writePop(segment, index) {
-    this.write(`pop ${segment.toLowerCase()} ${index}`);
+    this.write(`pop ${segment} ${index}`);
   }
 
   writeArithmetic(command) {
-    this.write(command.toLowerCase());
+    this.write(command);
   }
 
   writeLabel(label) {
