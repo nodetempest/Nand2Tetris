@@ -65,23 +65,19 @@ export class CompilationEngine {
     this.eat("{");
 
     while (
-      CompilationEngine.classVarDecKeywords
-        .concat(CompilationEngine.subroutineDecKeywords)
-        .includes(this.tokenizer.getToken().value)
+      CompilationEngine.classVarDecKeywords.includes(
+        this.tokenizer.getToken().value
+      )
     ) {
-      if (
-        CompilationEngine.classVarDecKeywords.includes(
-          this.tokenizer.getToken().value
-        )
-      ) {
-        this.compileClassVarDec();
-      } else if (
-        CompilationEngine.subroutineDecKeywords.includes(
-          this.tokenizer.getToken().value
-        )
-      ) {
-        this.compileSubroutineDec();
-      }
+      this.compileClassVarDec();
+    }
+
+    while (
+      CompilationEngine.subroutineDecKeywords.includes(
+        this.tokenizer.getToken().value
+      )
+    ) {
+      this.compileSubroutineDec();
     }
 
     this.eat("}");
