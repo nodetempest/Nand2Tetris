@@ -45,6 +45,6 @@ export class NLRTreeBrowser {
       return node;
     }
 
-    return Object.values(node)[1];
+    return Object.values(node)[0];
   }
 }

@@ -2,14 +2,14 @@ import fs from "fs";
 
 export class VMWriter {
   static segment = {
-    const: "const",
-    arg: "arg",
+    constant: "constant",
+    argument: "argument",
     local: "local",
     static: "static",
     this: "this",
     that: "that",
     pointer: "pointer",
-    tmep: "tmep",
+    temp: "temp",
   };
 
   static commands = {
@@ -26,10 +26,11 @@ export class VMWriter {
 
   constructor(outputFile) {
     this.outputFile = outputFile;
+    fs.writeFileSync(this.outputFile, "");
   }
 
   write(content) {
-    fs.writeFileSync(this.outputFile, content);
+    fs.appendFileSync(this.outputFile, content + "\r\n");
   }
 
   writePush(segment, index) {

@@ -42,3 +42,5 @@ export const asyncWalk = (dirPath) => {
 };
 
 export const last = (arr) => arr[arr.length - 1];
+
+export const format = (obj) => JSON.stringify(obj, null, 2);
