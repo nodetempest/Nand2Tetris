@@ -286,7 +286,7 @@ export class CompilationEngine {
     this.createAndSetNode(CompilationEngine.nonTerminalKeywords.expression);
     this.compileTerm();
 
-    if (CompilationEngine.op.includes(this.tokenizer.getToken().value)) {
+    while (CompilationEngine.op.includes(this.tokenizer.getToken().value)) {
       this.eat(this.tokenizer.getToken().value);
       this.compileTerm();
     }
