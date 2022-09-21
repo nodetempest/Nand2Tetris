@@ -2,8 +2,8 @@ export class SymbolTable {
   static kind = {
     static: "static",
     field: "field",
-    arg: "arg",
-    var: "var",
+    argument: "argument",
+    local: "local",
   };
 
   table = {};
@@ -39,5 +39,9 @@ export class SymbolTable {
 
   indexOf(name) {
     return this.table[name].index;
+  }
+
+  hasVar(name) {
+    return name in this.table;
   }
 }

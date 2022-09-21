@@ -160,7 +160,7 @@ export class CompilationEngine {
       this.subroutineSymbolTable.define(
         "this",
         this.className,
-        SymbolTable.kind.arg
+        SymbolTable.kind.argument
       );
     }
 
@@ -174,7 +174,7 @@ export class CompilationEngine {
 
     const type = this.readValue();
     const name = this.readValue();
-    this.subroutineSymbolTable.define(type, name, SymbolTable.kind.arg);
+    this.subroutineSymbolTable.define(name, type, SymbolTable.kind.argument);
 
     while (this.treeBrowser.getCurrentNodeValue() === ",") {
       this.compileVarDec();
@@ -195,7 +195,7 @@ export class CompilationEngine {
     }
 
     const fnName = [this.className, name].join(".");
-    const nLocals = this.subroutineSymbolTable.varCount(SymbolTable.kind.var);
+    const nLocals = this.subroutineSymbolTable.varCount(SymbolTable.kind.local);
 
     this.writer.wrtieFunction(fnName, nLocals);
 
@@ -217,7 +217,8 @@ export class CompilationEngine {
   compileVarDec() {
     this.eatKey(Analizer.nonTerminalKeywords.varDec);
 
-    const kind = this.readValue();
+    this.eatValue("var");
+    const kind = SymbolTable.kind.local;
     const type = this.readValue();
     const name = this.readValue();
 
@@ -235,14 +236,46 @@ export class CompilationEngine {
   compileStatements() {
     this.eatKey(Analizer.nonTerminalKeywords.statements);
 
-    const statement = this.treeBrowser.getCurrentNodeKey();
-
-    if (statement === "returnStatement") {
-      this.compileReturn();
+    while (
+      [
+        Analizer.nonTerminalKeywords.returnStatement,
+        Analizer.nonTerminalKeywords.letStatement,
+      ].includes(this.treeBrowser.getCurrentNodeKey())
+    ) {
+      if (
+        this.treeBrowser.getCurrentNodeKey() ===
+        Analizer.nonTerminalKeywords.returnStatement
+      ) {
+        this.compileReturn();
+      } else if (
+        this.treeBrowser.getCurrentNodeKey() ===
+        Analizer.nonTerminalKeywords.letStatement
+      ) {
+        this.compileLet();
+      }
     }
   }
 
-  compileLet() {}
+  compileLet() {
+    this.eatKey(Analizer.nonTerminalKeywords.letStatement);
+    this.eatValue("let");
+    const varName = this.readValue();
+    this.eatValue("=");
+    this.compileExpression();
+
+    const table = this.subroutineSymbolTable.hasVar(varName)
+      ? this.subroutineSymbolTable
+      : this.classSymbolTable;
+
+    let segment = table.kindOf(varName);
+    if (segment === SymbolTable.kind.field) {
+      segment = VMWriter.segment.this;
+    }
+
+    this.writer.writePop(segment, table.indexOf(varName));
+
+    this.eatValue(";");
+  }
 
   compileIf() {}
 
