@@ -47,4 +47,14 @@ export class NLRTreeBrowser {
 
     return Object.values(node)[0];
   }
+
+  mapValues(mapFn) {
+    this.nodes = this.nodes.map((node) => {
+      const [key, value] = Object.entries(node)[0];
+
+      return {
+        [key]: mapFn(value),
+      };
+    });
+  }
 }

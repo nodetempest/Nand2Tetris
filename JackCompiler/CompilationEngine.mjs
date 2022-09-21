@@ -25,6 +25,7 @@ export class CompilationEngine {
     const analizer = new Analizer(inputFile);
     const analizerTree = analizer.compile();
     this.treeBrowser = new NLRTreeBrowser(analizerTree);
+    this.treeBrowser.mapValues((value) => value?.trim?.() || value);
 
     fs.writeFileSync(outputFile + ".json", format(analizerTree));
 
@@ -96,13 +97,7 @@ export class CompilationEngine {
   }
 
   getCurrentNodeValue() {
-    let value = this.treeBrowser.getCurrentNodeLeaves();
-
-    if (typeof value === "string") {
-      value = value.trim();
-    }
-
-    return value;
+    return this.treeBrowser.getCurrentNodeLeaves();
   }
 
   setCurrentSubroutine(name, returnType, kind) {
