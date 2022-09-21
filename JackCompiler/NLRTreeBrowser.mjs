@@ -30,7 +30,7 @@ export class NLRTreeBrowser {
     return this.hasMoreNodes() ? this.nodes[this.pos] : null;
   }
 
-  getCurrentNodeType() {
+  getCurrentNodeKey() {
     const node = this.getCurrentNode();
     if (node === null) {
       return node;
@@ -39,7 +39,7 @@ export class NLRTreeBrowser {
     return Object.keys(node)[0];
   }
 
-  getCurrentNodeLeaves() {
+  getCurrentNodeValue() {
     const node = this.getCurrentNode();
     if (node === null) {
       return node;

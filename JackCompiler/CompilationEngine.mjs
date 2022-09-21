@@ -32,72 +32,60 @@ export class CompilationEngine {
     this.compileClass();
   }
 
-  advance() {
-    this.treeBrowser.advance();
-  }
+  eatKey(key) {
+    const currentNodeKey = this.treeBrowser.getCurrentNodeKey();
 
-  eatType(nodeType) {
-    const currentNodeType = this.getCurrentNodeType();
-
-    if (nodeType === null && currentNodeType === null) {
+    if (key === null && currentNodeKey === null) {
       return;
-    } else if (nodeType === null && this.treeBrowser.hasMoreNodes()) {
+    } else if (key === null && this.treeBrowser.hasMoreNodes()) {
       throw new CompilationEngineError(
         [
-          `Expected EOF but recieved node type: '${currentNodeType}'`,
-          `expected: '${nodeType}'`,
+          `Expected EOF but recieved node type: '${currentNodeKey}'`,
+          `expected: '${key}'`,
           `at node: ${format(this.treeBrowser.getCurrentNode())}`,
         ].join("\r\n")
       );
     }
 
-    if (currentNodeType !== nodeType) {
+    if (currentNodeKey !== key) {
       throw new CompilationEngineError(
         [
-          `Invalid node type: '${currentNodeType}'`,
-          `expected: '${nodeType}'`,
+          `Invalid node type: '${currentNodeKey}'`,
+          `expected: '${key}'`,
           `at node: ${format(this.treeBrowser.getCurrentNode())}`,
         ].join("\r\n")
       );
     } else {
-      this.advance();
+      this.treeBrowser.advance();
     }
   }
 
-  eatValue(nodeValue) {
-    const currentNodeValue = this.getCurrentNodeValue();
+  eatValue(value) {
+    const currentNodeValue = this.treeBrowser.getCurrentNodeValue();
 
-    if (currentNodeValue !== nodeValue) {
+    if (currentNodeValue !== value) {
       throw new CompilationEngineError(
         [
           `Invalid node value: ${format(currentNodeValue)}`,
-          `expected: '${nodeValue}'`,
+          `expected: '${value}'`,
           `at node: ${format(this.treeBrowser.getCurrentNode())}`,
         ].join("\r\n")
       );
     } else {
-      this.advance();
+      this.treeBrowser.advance();
     }
   }
 
   readValue() {
-    const value = this.getCurrentNodeValue();
-    this.advance();
+    const value = this.treeBrowser.getCurrentNodeValue();
+    this.treeBrowser.advance();
     return value;
   }
 
-  readType() {
-    const type = this.getCurrentNodeType();
-    this.advance();
-    return type;
-  }
-
-  getCurrentNodeType() {
-    return this.treeBrowser.getCurrentNodeType();
-  }
-
-  getCurrentNodeValue() {
-    return this.treeBrowser.getCurrentNodeLeaves();
+  readKey() {
+    const key = this.treeBrowser.getCurrentNodeKey();
+    this.treeBrowser.advance();
+    return key;
   }
 
   setCurrentSubroutine(name, returnType, kind) {
@@ -109,7 +97,7 @@ export class CompilationEngine {
   }
 
   compileClass() {
-    this.eatType(Analizer.nonTerminalKeywords.class);
+    this.eatKey(Analizer.nonTerminalKeywords.class);
 
     this.eatValue("class");
     this.className = this.readValue();
@@ -117,23 +105,25 @@ export class CompilationEngine {
     this.eatValue("{");
 
     while (
-      this.getCurrentNodeType() === Analizer.nonTerminalKeywords.classVarDec
+      this.treeBrowser.getCurrentNodeKey() ===
+      Analizer.nonTerminalKeywords.classVarDec
     ) {
       this.compileClassVarDec();
     }
 
     while (
-      this.getCurrentNodeType() === Analizer.nonTerminalKeywords.subroutineDec
+      this.treeBrowser.getCurrentNodeKey() ===
+      Analizer.nonTerminalKeywords.subroutineDec
     ) {
       this.compileSubroutineDec();
     }
 
     this.eatValue("}");
-    this.eatType(null);
+    this.eatKey(null);
   }
 
   compileClassVarDec() {
-    this.eatType(Analizer.nonTerminalKeywords.classVarDec);
+    this.eatKey(Analizer.nonTerminalKeywords.classVarDec);
 
     const kind = this.readValue();
     const type = this.readValue();
@@ -141,7 +131,7 @@ export class CompilationEngine {
 
     this.classSymbolTable.define(name, type, kind);
 
-    while (this.getCurrentNodeValue() === ",") {
+    while (this.treeBrowser.getCurrentNodeValue() === ",") {
       this.eatValue(",");
 
       const name = this.readValue();
@@ -151,7 +141,7 @@ export class CompilationEngine {
   }
 
   compileSubroutineDec() {
-    this.eatType(Analizer.nonTerminalKeywords.subroutineDec);
+    this.eatKey(Analizer.nonTerminalKeywords.subroutineDec);
     this.subroutineSymbolTable.startSubroutine();
 
     const kind = this.readValue();
@@ -174,9 +164,9 @@ export class CompilationEngine {
       );
     }
 
-    const paramListIsEmpty = !this.getCurrentNodeValue().length;
+    const paramListIsEmpty = !this.treeBrowser.getCurrentNodeValue().length;
 
-    this.eatType(Analizer.nonTerminalKeywords.parameterList);
+    this.eatKey(Analizer.nonTerminalKeywords.parameterList);
 
     if (paramListIsEmpty) {
       return;
@@ -186,7 +176,7 @@ export class CompilationEngine {
     const name = this.readValue();
     this.subroutineSymbolTable.define(type, name, SymbolTable.kind.arg);
 
-    while (this.getCurrentNodeValue() === ",") {
+    while (this.treeBrowser.getCurrentNodeValue() === ",") {
       this.compileVarDec();
     }
   }
@@ -194,10 +184,13 @@ export class CompilationEngine {
   complieSubroutineBody() {
     const { name, kind } = this.currentSubroutine;
 
-    this.eatType(Analizer.nonTerminalKeywords.subroutineBody);
+    this.eatKey(Analizer.nonTerminalKeywords.subroutineBody);
     this.eatValue("{");
 
-    while (this.getCurrentNodeType() === Analizer.nonTerminalKeywords.varDec) {
+    while (
+      this.treeBrowser.getCurrentNodeKey() ===
+      Analizer.nonTerminalKeywords.varDec
+    ) {
       this.compileVarDec();
     }
 
@@ -222,7 +215,7 @@ export class CompilationEngine {
   }
 
   compileVarDec() {
-    this.eatType(Analizer.nonTerminalKeywords.varDec);
+    this.eatKey(Analizer.nonTerminalKeywords.varDec);
 
     const kind = this.readValue();
     const type = this.readValue();
@@ -230,7 +223,7 @@ export class CompilationEngine {
 
     this.subroutineSymbolTable.define(name, type, kind);
 
-    while (this.getCurrentNodeValue() === ",") {
+    while (this.treeBrowser.getCurrentNodeValue() === ",") {
       this.eatValue(",");
       const name = this.readValue();
       this.subroutineSymbolTable.define(name, type, kind);
@@ -240,9 +233,9 @@ export class CompilationEngine {
   }
 
   compileStatements() {
-    this.eatType(Analizer.nonTerminalKeywords.statements);
+    this.eatKey(Analizer.nonTerminalKeywords.statements);
 
-    const statement = this.getCurrentNodeType();
+    const statement = this.treeBrowser.getCurrentNodeKey();
 
     if (statement === "returnStatement") {
       this.compileReturn();
@@ -259,7 +252,7 @@ export class CompilationEngine {
 
   // TODO: complete return implementation
   compileReturn() {
-    this.eatType(Analizer.nonTerminalKeywords.returnStatement);
+    this.eatKey(Analizer.nonTerminalKeywords.returnStatement);
 
     this.eatValue("return");
 
@@ -268,7 +261,8 @@ export class CompilationEngine {
     if (kind === "method" && returnType === "void") {
       this.writer.writePush(VMWriter.segment.constant, 0);
     } else if (
-      this.getCurrentNodeType() === Analizer.nonTerminalKeywords.expression
+      this.treeBrowser.getCurrentNodeKey() ===
+      Analizer.nonTerminalKeywords.expression
     ) {
       this.compileExpression();
     }
@@ -279,8 +273,8 @@ export class CompilationEngine {
   }
 
   compileExpression() {
-    this.eatType(Analizer.nonTerminalKeywords.expression);
-    this.eatType(Analizer.nonTerminalKeywords.term);
+    this.eatKey(Analizer.nonTerminalKeywords.expression);
+    this.eatKey(Analizer.nonTerminalKeywords.term);
     const value = this.readValue();
 
     if (value === "this") {
