@@ -6,6 +6,7 @@ import { VMWriter } from "./VMWriter.mjs";
 import { CompilationEngineError } from "./errors.mjs";
 import { format } from "./utils.mjs";
 import { CompilationEngine as Analizer } from "../JackAnalyzer/CompilationEngine.mjs";
+import { Tokenizer } from "../JackAnalyzer/Tokenizer.mjs";
 
 export class CompilationEngine {
   classSymbolTable = new SymbolTable();
@@ -25,7 +26,11 @@ export class CompilationEngine {
     const analizer = new Analizer(inputFile);
     const analizerTree = analizer.compile();
     this.treeBrowser = new NLRTreeBrowser(analizerTree);
-    this.treeBrowser.mapValues((value) => value?.trim?.() || value);
+
+    // " tokenvalue " --> "tokenvalue"
+    this.treeBrowser.mapValues((value) =>
+      typeof value === "string" ? value.slice(1, -1) : value
+    );
 
     fs.writeFileSync(outputFile + ".json", format(analizerTree));
 
@@ -123,7 +128,9 @@ export class CompilationEngine {
       "~": VMWriter.commands.not,
     };
 
-    this.writer.writeArithmetic(opMap[op]);
+    if (op in opMap) {
+      this.writer.writeArithmetic(opMap[op]);
+    }
   }
 
   compileClass() {
@@ -367,12 +374,23 @@ export class CompilationEngine {
       this.eatKey(Analizer.nonTerminalKeywords.term);
     }
 
+    const tokenType = this.treeBrowser.getCurrentNodeKey();
     const value = this.readValue();
 
     if (value === "this") {
       this.writer.writePush(VMWriter.segment.pointer, 0);
-    } else {
+    } else if (tokenType === Tokenizer.tokenTypes.integerConstant) {
       this.writer.writePush(VMWriter.segment.constant, value);
+    } else if (tokenType === Tokenizer.tokenTypes.stringConstant) {
+      this.writer.writePush(VMWriter.segment.constant, value.length);
+      this.writer.writeCall("String.new", 1);
+
+      if (value !== "") {
+        value.split("").forEach((char) => {
+          this.writer.writePush(VMWriter.segment.constant, char.charCodeAt());
+          this.writer.writeCall("String.appendChar", 2);
+        });
+      }
     }
 
     this.writeUnaryOp(op);
