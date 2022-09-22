@@ -96,6 +96,36 @@ export class CompilationEngine {
     };
   }
 
+  writeOp(op) {
+    const opMap = {
+      "+": VMWriter.commands.add,
+      "-": VMWriter.commands.sub,
+      "=": VMWriter.commands.eq,
+      ">": VMWriter.commands.gt,
+      "<": VMWriter.commands.lt,
+      "&": VMWriter.commands.and,
+      "|": VMWriter.commands.or,
+      "+": VMWriter.commands.add,
+    };
+
+    if (op in opMap) {
+      this.writer.writeArithmetic(opMap[op]);
+    } else if (op === "*") {
+      this.writer.writeCall("Math.multiply", 2);
+    } else if (op === "/") {
+      this.writer.writeCall("Math.divide", 2);
+    }
+  }
+
+  writeUnaryOp(op) {
+    const opMap = {
+      "-": VMWriter.commands.neg,
+      "~": VMWriter.commands.not,
+    };
+
+    this.writer.writeArithmetic(opMap[op]);
+  }
+
   compileClass() {
     this.eatKey(Analizer.nonTerminalKeywords.class);
 
@@ -307,7 +337,36 @@ export class CompilationEngine {
 
   compileExpression() {
     this.eatKey(Analizer.nonTerminalKeywords.expression);
+
+    this.compileTerm();
+
+    while (Analizer.op.includes(this.treeBrowser.getCurrentNodeValue())) {
+      const op = this.readValue();
+      this.compileTerm();
+      this.writeOp(op);
+    }
+  }
+
+  compileTerm() {
     this.eatKey(Analizer.nonTerminalKeywords.term);
+
+    const nodeValue = this.treeBrowser.getCurrentNodeValue();
+
+    if (nodeValue === "(") {
+      this.eatValue("(");
+      this.compileExpression();
+      this.eatValue(")");
+      return;
+    }
+
+    const nodeKey = this.treeBrowser.getCurrentNodeKey();
+    let op;
+
+    if (nodeKey === "symbol") {
+      op = this.readValue();
+      this.eatKey(Analizer.nonTerminalKeywords.term);
+    }
+
     const value = this.readValue();
 
     if (value === "this") {
@@ -315,9 +374,9 @@ export class CompilationEngine {
     } else {
       this.writer.writePush(VMWriter.segment.constant, value);
     }
-  }
 
-  compileTerm() {}
+    this.writeUnaryOp(op);
+  }
 
   compileExpressionList() {}
 }
