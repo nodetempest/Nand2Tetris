@@ -101,6 +101,30 @@ export class CompilationEngine {
     };
   }
 
+  lookupVar(varName) {
+    const table = this.subroutineSymbolTable.hasVar(varName)
+      ? this.subroutineSymbolTable
+      : this.classSymbolTable;
+
+    let segment = table.kindOf(varName);
+    if (segment === SymbolTable.kind.field) {
+      segment = VMWriter.segment.this;
+    }
+    const index = table.indexOf(varName);
+
+    return { segment, index };
+  }
+
+  writePushVar(varName) {
+    const { segment, index } = this.lookupVar(varName);
+    this.writer.writePush(segment, index);
+  }
+
+  writePopVar(varName) {
+    const { segment, index } = this.lookupVar(varName);
+    this.writer.writePop(segment, index);
+  }
+
   writeOp(op) {
     const opMap = {
       "+": VMWriter.commands.add,
@@ -214,7 +238,10 @@ export class CompilationEngine {
     this.subroutineSymbolTable.define(name, type, SymbolTable.kind.argument);
 
     while (this.treeBrowser.getCurrentNodeValue() === ",") {
-      this.compileVarDec();
+      this.eatValue(",");
+      const type = this.readValue();
+      const name = this.readValue();
+      this.subroutineSymbolTable.define(name, type, SymbolTable.kind.argument);
     }
   }
 
@@ -300,16 +327,7 @@ export class CompilationEngine {
     this.eatValue("=");
     this.compileExpression();
 
-    const table = this.subroutineSymbolTable.hasVar(varName)
-      ? this.subroutineSymbolTable
-      : this.classSymbolTable;
-
-    let segment = table.kindOf(varName);
-    if (segment === SymbolTable.kind.field) {
-      segment = VMWriter.segment.this;
-    }
-
-    this.writer.writePop(segment, table.indexOf(varName));
+    this.writePopVar(varName);
 
     this.eatValue(";");
   }
@@ -375,26 +393,73 @@ export class CompilationEngine {
     }
 
     const tokenType = this.treeBrowser.getCurrentNodeKey();
-    const value = this.readValue();
+    const variable = this.readValue();
 
-    if (value === "this") {
+    if (variable === "this") {
       this.writer.writePush(VMWriter.segment.pointer, 0);
     } else if (tokenType === Tokenizer.tokenTypes.integerConstant) {
-      this.writer.writePush(VMWriter.segment.constant, value);
+      this.writer.writePush(VMWriter.segment.constant, variable);
     } else if (tokenType === Tokenizer.tokenTypes.stringConstant) {
-      this.writer.writePush(VMWriter.segment.constant, value.length);
+      this.writer.writePush(VMWriter.segment.constant, variable.length);
       this.writer.writeCall("String.new", 1);
 
-      if (value !== "") {
-        value.split("").forEach((char) => {
+      if (variable !== "") {
+        variable.split("").forEach((char) => {
           this.writer.writePush(VMWriter.segment.constant, char.charCodeAt());
           this.writer.writeCall("String.appendChar", 2);
         });
+      }
+    } else if (tokenType === Tokenizer.tokenTypes.identifier) {
+      const nextSymbol = this.treeBrowser.getCurrentNodeValue();
+
+      if (nextSymbol === "(") {
+        this.eatValue("(");
+
+        this.writer.writePush(VMWriter.segment.pointer, 0);
+
+        const nArgs = this.compileExpressionList();
+        this.eatValue(")");
+
+        this.writer.writeCall([this.className, variable].join("."), nArgs + 1);
+      } else if (nextSymbol === "[") {
+        // TODO: implement arrays
+      } else if (nextSymbol === ".") {
+        this.eatValue(".");
+
+        const methodName = this.readValue();
+
+        this.eatValue("(");
+        const nArgs = this.compileExpressionList();
+        this.eatValue(")");
+
+        this.writer.writeCall([variable, methodName].join("."), nArgs);
+      } else {
+        this.writePushVar(variable);
       }
     }
 
     this.writeUnaryOp(op);
   }
 
-  compileExpressionList() {}
+  compileExpressionList() {
+    const isEmpty = !this.treeBrowser.getCurrentNodeValue().length;
+    let nArgs = 0;
+
+    this.eatKey(Analizer.nonTerminalKeywords.expressionList);
+
+    if (isEmpty) {
+      return nArgs;
+    }
+
+    this.compileExpression();
+    nArgs++;
+
+    while (this.treeBrowser.getCurrentNodeValue() === ",") {
+      this.eatValue(",");
+      this.compileExpression();
+      nArgs++;
+    }
+
+    return nArgs;
+  }
 }
