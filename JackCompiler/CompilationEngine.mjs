@@ -28,6 +28,7 @@ export class CompilationEngine {
     this.treeBrowser = new NLRTreeBrowser(analizerTree);
 
     // " tokenvalue " --> "tokenvalue"
+    // can't trim because of space symbol "   "
     this.treeBrowser.mapValues((value) =>
       typeof value === "string" ? value.slice(1, -1) : value
     );
@@ -324,10 +325,29 @@ export class CompilationEngine {
     this.eatKey(Analizer.nonTerminalKeywords.letStatement);
     this.eatValue("let");
     const varName = this.readValue();
+
+    const isArrayIndexAssignment =
+      this.treeBrowser.getCurrentNodeValue() === "[";
+
+    if (isArrayIndexAssignment) {
+      this.eatValue("[");
+      this.compileExpression();
+      this.eatValue("]");
+      this.writePushVar(varName);
+      this.writer.writeArithmetic(VMWriter.commands.add);
+    }
+
     this.eatValue("=");
     this.compileExpression();
 
-    this.writePopVar(varName);
+    if (isArrayIndexAssignment) {
+      this.writer.writePop(VMWriter.segment.temp, 0);
+      this.writer.writePop(VMWriter.segment.pointer, 1);
+      this.writer.writePush(VMWriter.segment.temp, 0);
+      this.writer.writePop(VMWriter.segment.that, 0);
+    } else {
+      this.writePopVar(varName);
+    }
 
     this.eatValue(";");
   }
@@ -338,7 +358,6 @@ export class CompilationEngine {
 
   compileDo() {}
 
-  // TODO: complete return implementation
   compileReturn() {
     this.eatKey(Analizer.nonTerminalKeywords.returnStatement);
 
@@ -432,7 +451,13 @@ export class CompilationEngine {
 
         this.writer.writeCall([this.className, variable].join("."), nArgs + 1);
       } else if (nextSymbol === "[") {
-        // TODO: implement arrays
+        this.eatValue("[");
+        this.compileExpression();
+        this.eatValue("]");
+        this.writePushVar(variable);
+        this.writer.writeArithmetic(VMWriter.commands.add);
+        this.writer.writePop(VMWriter.segment.pointer, 1);
+        this.writer.writePush(VMWriter.segment.that, 0);
       } else if (nextSymbol === ".") {
         this.eatValue(".");
 
