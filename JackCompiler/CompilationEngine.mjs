@@ -395,8 +395,18 @@ export class CompilationEngine {
     const tokenType = this.treeBrowser.getCurrentNodeKey();
     const variable = this.readValue();
 
-    if (variable === "this") {
-      this.writer.writePush(VMWriter.segment.pointer, 0);
+    if (Object.values(Analizer.keywordConstant).includes(variable)) {
+      if (variable === Analizer.keywordConstant.true) {
+        this.writer.writePush(VMWriter.segment.constant, 0);
+        this.writer.writeArithmetic(VMWriter.commands.not);
+      } else if (
+        variable === Analizer.keywordConstant.false ||
+        variable === Analizer.keywordConstant.null
+      ) {
+        this.writer.writePush(VMWriter.segment.constant, 0);
+      } else if (variable === Analizer.keywordConstant.this) {
+        this.writer.writePush(VMWriter.segment.pointer, 0);
+      }
     } else if (tokenType === Tokenizer.tokenTypes.integerConstant) {
       this.writer.writePush(VMWriter.segment.constant, variable);
     } else if (tokenType === Tokenizer.tokenTypes.stringConstant) {

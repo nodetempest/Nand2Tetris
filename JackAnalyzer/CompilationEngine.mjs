@@ -8,7 +8,12 @@ export class CompilationEngine {
   static statementKeywords = ["let", "if", "while", "do", "return"];
   static op = ["+", "-", "*", "/", "&", "|", ">", "<", "="];
   static unaryOp = ["~", "-"];
-  static keywordConstant = ["true", "false", "null", "this"];
+  static keywordConstant = {
+    true: "true",
+    false: "false",
+    null: "null",
+    this: "this",
+  };
   static nonTerminalKeywords = {
     class: "class",
     classVarDec: "classVarDec",
