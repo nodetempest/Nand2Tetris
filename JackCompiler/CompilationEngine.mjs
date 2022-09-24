@@ -28,7 +28,7 @@ export class CompilationEngine {
     this.treeBrowser = new NLRTreeBrowser(analizerTree);
 
     // " tokenvalue " --> "tokenvalue"
-    // can't trim because of space symbol "   "
+    // can't use trim because of space symbol "   "
     this.treeBrowser.mapValues((value) =>
       typeof value === "string" ? value.slice(1, -1) : value
     );
@@ -328,6 +328,7 @@ export class CompilationEngine {
         Analizer.nonTerminalKeywords.letStatement,
         Analizer.nonTerminalKeywords.ifStatement,
         Analizer.nonTerminalKeywords.whileStatement,
+        Analizer.nonTerminalKeywords.doStatement,
       ].includes(this.treeBrowser.getCurrentNodeKey())
     ) {
       if (
@@ -350,6 +351,11 @@ export class CompilationEngine {
         Analizer.nonTerminalKeywords.whileStatement
       ) {
         this.compileWhile();
+      } else if (
+        this.treeBrowser.getCurrentNodeKey() ===
+        Analizer.nonTerminalKeywords.doStatement
+      ) {
+        this.compileDo();
       }
     }
   }
@@ -448,7 +454,14 @@ export class CompilationEngine {
     this.writer.writeLabel(whileEndLabel);
   }
 
-  compileDo() {}
+  compileDo() {
+    this.eatKey(Analizer.nonTerminalKeywords.doStatement);
+    this.eatValue("do");
+    const identifier = this.readValue();
+    const nextSymbol = this.treeBrowser.getCurrentNodeValue();
+    this.compileSubroutineCall(identifier, nextSymbol);
+    this.eatValue(";");
+  }
 
   compileReturn() {
     this.eatKey(Analizer.nonTerminalKeywords.returnStatement);
@@ -533,15 +546,8 @@ export class CompilationEngine {
     } else if (tokenType === Tokenizer.tokenTypes.identifier) {
       const nextSymbol = this.treeBrowser.getCurrentNodeValue();
 
-      if (nextSymbol === "(") {
-        this.eatValue("(");
-
-        this.writer.writePush(VMWriter.segment.pointer, 0);
-
-        const nArgs = this.compileExpressionList();
-        this.eatValue(")");
-
-        this.writer.writeCall([this.className, variable].join("."), nArgs + 1);
+      if (nextSymbol === "(" || nextSymbol === ".") {
+        this.compileSubroutineCall(variable, nextSymbol);
       } else if (nextSymbol === "[") {
         this.eatValue("[");
         this.compileExpression();
@@ -550,29 +556,42 @@ export class CompilationEngine {
         this.writer.writeArithmetic(VMWriter.commands.add);
         this.writer.writePop(VMWriter.segment.pointer, 1);
         this.writer.writePush(VMWriter.segment.that, 0);
-      } else if (nextSymbol === ".") {
-        this.eatValue(".");
-
-        const methodName = this.readValue();
-
-        this.eatValue("(");
-        const nArgs = this.compileExpressionList();
-        this.eatValue(")");
-
-        if (this.varExists(variable)) {
-          this.writePushVar(variable);
-
-          const { type } = this.lookupVar(variable);
-          this.writer.writeCall([type, methodName].join("."), nArgs + 1);
-        } else {
-          this.writer.writeCall([variable, methodName].join("."), nArgs);
-        }
       } else {
         this.writePushVar(variable);
       }
     }
 
     this.writeUnaryOp(op);
+  }
+
+  compileSubroutineCall(identifier, nextSymbol) {
+    if (nextSymbol === "(") {
+      this.eatValue("(");
+
+      this.writer.writePush(VMWriter.segment.pointer, 0);
+
+      const nArgs = this.compileExpressionList();
+      this.eatValue(")");
+
+      this.writer.writeCall([this.className, identifier].join("."), nArgs + 1);
+    } else if (nextSymbol === ".") {
+      this.eatValue(".");
+
+      const methodName = this.readValue();
+
+      this.eatValue("(");
+      const nArgs = this.compileExpressionList();
+      this.eatValue(")");
+
+      if (this.varExists(identifier)) {
+        this.writePushVar(identifier);
+
+        const { type } = this.lookupVar(identifier);
+        this.writer.writeCall([type, methodName].join("."), nArgs + 1);
+      } else {
+        this.writer.writeCall([identifier, methodName].join("."), nArgs);
+      }
+    }
   }
 
   compileExpressionList() {
