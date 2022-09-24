@@ -457,10 +457,14 @@ export class CompilationEngine {
   compileDo() {
     this.eatKey(Analizer.nonTerminalKeywords.doStatement);
     this.eatValue("do");
+
     const identifier = this.readValue();
     const nextSymbol = this.treeBrowser.getCurrentNodeValue();
+
     this.compileSubroutineCall(identifier, nextSymbol);
     this.eatValue(";");
+
+    this.writer.writePop(VMWriter.segment.temp, 0);
   }
 
   compileReturn() {
