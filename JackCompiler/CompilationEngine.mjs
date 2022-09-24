@@ -4,7 +4,7 @@ import { SymbolTable } from "./SymbolTable.mjs";
 import { NLRTreeBrowser } from "./NLRTreeBrowser.mjs";
 import { VMWriter } from "./VMWriter.mjs";
 import { CompilationEngineError } from "./errors.mjs";
-import { format } from "./utils.mjs";
+import { format, genId } from "./utils.mjs";
 import { CompilationEngine as Analizer } from "../JackAnalyzer/CompilationEngine.mjs";
 import { Tokenizer } from "../JackAnalyzer/Tokenizer.mjs";
 
@@ -305,6 +305,7 @@ export class CompilationEngine {
       [
         Analizer.nonTerminalKeywords.returnStatement,
         Analizer.nonTerminalKeywords.letStatement,
+        Analizer.nonTerminalKeywords.ifStatement,
       ].includes(this.treeBrowser.getCurrentNodeKey())
     ) {
       if (
@@ -317,6 +318,11 @@ export class CompilationEngine {
         Analizer.nonTerminalKeywords.letStatement
       ) {
         this.compileLet();
+      } else if (
+        this.treeBrowser.getCurrentNodeKey() ===
+        Analizer.nonTerminalKeywords.ifStatement
+      ) {
+        this.compileIf();
       }
     }
   }
@@ -352,7 +358,43 @@ export class CompilationEngine {
     this.eatValue(";");
   }
 
-  compileIf() {}
+  compileIf() {
+    this.eatKey(Analizer.nonTerminalKeywords.ifStatement);
+
+    const callId = genId();
+    const ifTrueLabel = `IF_TRUE_${callId}`;
+    const ifFalseLabel = `IF_FALSE_${callId}`;
+    const ifEndLabel = `IF_END_${callId}`;
+
+    this.eatValue("if");
+    this.eatValue("(");
+    this.compileExpression();
+    this.eatValue(")");
+
+    this.writer.writeIf(ifTrueLabel);
+    this.writer.writeGoto(ifFalseLabel);
+    this.writer.writeLabel(ifTrueLabel);
+
+    this.eatValue("{");
+    this.compileStatements();
+    this.eatValue("}");
+
+    const withElse = this.treeBrowser.getCurrentNodeValue() === "else";
+
+    if (withElse) {
+      this.writer.writeGoto(ifEndLabel);
+    }
+
+    this.writer.writeLabel(ifFalseLabel);
+
+    if (withElse) {
+      this.eatValue("else");
+      this.eatValue("{");
+      this.compileStatements();
+      this.eatValue("}");
+      this.writer.writeLabel(ifEndLabel);
+    }
+  }
 
   compileWhile() {}
 
@@ -459,6 +501,10 @@ export class CompilationEngine {
         this.writer.writePop(VMWriter.segment.pointer, 1);
         this.writer.writePush(VMWriter.segment.that, 0);
       } else if (nextSymbol === ".") {
+        // TODO: check folllowing:
+        // might not work for:
+        // let x = new MyClass()
+        // let y = x.retVal()
         this.eatValue(".");
 
         const methodName = this.readValue();

@@ -1,5 +1,8 @@
 import fs from "fs";
 import path from "path";
+import crypto from "crypto";
+
+export const genId = () => crypto.randomBytes(16).toString("hex");
 
 export const isDir = (path) => {
   try {

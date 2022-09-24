@@ -59,7 +59,7 @@ const getGoToVarsTable = (instructions) => {
     const varsCountBeforeCurrent = Object.keys(acc).length;
 
     // (LOOP) --> LOOP
-    const varName = instr.slice(1).slice(0, -1);
+    const varName = instr.slice(1, -1);
 
     if (isGoToVariable(instr)) {
       return { ...acc, [varName]: currentVarIndex - varsCountBeforeCurrent };
