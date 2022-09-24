@@ -472,9 +472,9 @@ export class CompilationEngine {
 
     this.eatValue("return");
 
-    const { kind, returnType } = this.currentSubroutine;
+    const { returnType } = this.currentSubroutine;
 
-    if (kind === "method" && returnType === "void") {
+    if (returnType === "void") {
       this.writer.writePush(VMWriter.segment.constant, 0);
     } else if (
       this.treeBrowser.getCurrentNodeKey() ===
