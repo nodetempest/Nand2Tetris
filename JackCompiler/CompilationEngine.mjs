@@ -563,6 +563,9 @@ export class CompilationEngine {
       } else {
         this.writePushVar(variable);
       }
+    } else if (variable === "(") {
+      this.compileExpression();
+      this.eatValue(")");
     }
 
     this.writeUnaryOp(op);
