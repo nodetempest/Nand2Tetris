@@ -102,7 +102,18 @@ export class CompilationEngine {
     };
   }
 
+  varExists(varName) {
+    return (
+      this.subroutineSymbolTable.hasVar(varName) ||
+      this.classSymbolTable.hasVar(varName)
+    );
+  }
+
   lookupVar(varName) {
+    if (!this.varExists(varName)) {
+      return;
+    }
+
     const table = this.subroutineSymbolTable.hasVar(varName)
       ? this.subroutineSymbolTable
       : this.classSymbolTable;
@@ -111,17 +122,27 @@ export class CompilationEngine {
     if (segment === SymbolTable.kind.field) {
       segment = VMWriter.segment.this;
     }
+
+    const type = table.typeOf(varName);
     const index = table.indexOf(varName);
 
-    return { segment, index };
+    return { segment, type, index };
   }
 
   writePushVar(varName) {
+    if (!this.varExists(varName)) {
+      return;
+    }
+
     const { segment, index } = this.lookupVar(varName);
     this.writer.writePush(segment, index);
   }
 
   writePopVar(varName) {
+    if (!this.varExists(varName)) {
+      return;
+    }
+
     const { segment, index } = this.lookupVar(varName);
     this.writer.writePop(segment, index);
   }
@@ -530,10 +551,6 @@ export class CompilationEngine {
         this.writer.writePop(VMWriter.segment.pointer, 1);
         this.writer.writePush(VMWriter.segment.that, 0);
       } else if (nextSymbol === ".") {
-        // TODO: check folllowing:
-        // might not work for:
-        // let x = new MyClass()
-        // let y = x.retVal()
         this.eatValue(".");
 
         const methodName = this.readValue();
@@ -542,7 +559,14 @@ export class CompilationEngine {
         const nArgs = this.compileExpressionList();
         this.eatValue(")");
 
-        this.writer.writeCall([variable, methodName].join("."), nArgs);
+        if (this.varExists(variable)) {
+          this.writePushVar(variable);
+
+          const { type } = this.lookupVar(variable);
+          this.writer.writeCall([type, methodName].join("."), nArgs + 1);
+        } else {
+          this.writer.writeCall([variable, methodName].join("."), nArgs);
+        }
       } else {
         this.writePushVar(variable);
       }
