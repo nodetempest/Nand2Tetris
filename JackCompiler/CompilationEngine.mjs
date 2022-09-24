@@ -306,6 +306,7 @@ export class CompilationEngine {
         Analizer.nonTerminalKeywords.returnStatement,
         Analizer.nonTerminalKeywords.letStatement,
         Analizer.nonTerminalKeywords.ifStatement,
+        Analizer.nonTerminalKeywords.whileStatement,
       ].includes(this.treeBrowser.getCurrentNodeKey())
     ) {
       if (
@@ -323,6 +324,11 @@ export class CompilationEngine {
         Analizer.nonTerminalKeywords.ifStatement
       ) {
         this.compileIf();
+      } else if (
+        this.treeBrowser.getCurrentNodeKey() ===
+        Analizer.nonTerminalKeywords.whileStatement
+      ) {
+        this.compileWhile();
       }
     }
   }
@@ -396,7 +402,30 @@ export class CompilationEngine {
     }
   }
 
-  compileWhile() {}
+  compileWhile() {
+    const callId = genId();
+    const whileExpLabel = `WHILE_EXP_${callId}`;
+    const whileEndLabel = `WHILE_END_${callId}`;
+
+    this.eatKey(Analizer.nonTerminalKeywords.whileStatement);
+
+    this.writer.writeLabel(whileExpLabel);
+
+    this.eatValue("while");
+    this.eatValue("(");
+    this.compileExpression();
+    this.eatValue(")");
+
+    this.writer.writeArithmetic(VMWriter.commands.not);
+    this.writer.writeIf(whileEndLabel);
+
+    this.eatValue("{");
+    this.compileStatements();
+    this.eatValue("}");
+
+    this.writer.writeGoto(whileExpLabel);
+    this.writer.writeLabel(whileEndLabel);
+  }
 
   compileDo() {}
 
