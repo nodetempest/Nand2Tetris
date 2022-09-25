@@ -15,7 +15,7 @@ export class CompilationEngine {
   className = "Main";
 
   currentSubroutine = {
-    kind: Analizer.subroutineDecKeywords.function,
+    kind: Analizer.subroutineDecKeywords.FUNCTION,
     returnType: "void",
     name: "main",
   };
@@ -119,8 +119,8 @@ export class CompilationEngine {
       : this.classSymbolTable;
 
     let segment = table.kindOf(varName);
-    if (segment === SymbolTable.kind.field) {
-      segment = VMWriter.segment.this;
+    if (segment === SymbolTable.kind.FIELD) {
+      segment = VMWriter.segment.THIS;
     }
 
     const type = table.typeOf(varName);
@@ -149,14 +149,14 @@ export class CompilationEngine {
 
   writeOp(op) {
     const opMap = {
-      "+": VMWriter.commands.add,
-      "-": VMWriter.commands.sub,
-      "=": VMWriter.commands.eq,
-      ">": VMWriter.commands.gt,
-      "<": VMWriter.commands.lt,
-      "&": VMWriter.commands.and,
-      "|": VMWriter.commands.or,
-      "+": VMWriter.commands.add,
+      "+": VMWriter.commands.ADD,
+      "-": VMWriter.commands.SUB,
+      "=": VMWriter.commands.EQ,
+      ">": VMWriter.commands.GT,
+      "<": VMWriter.commands.LT,
+      "&": VMWriter.commands.AND,
+      "|": VMWriter.commands.OR,
+      "+": VMWriter.commands.ADD,
     };
 
     if (op in opMap) {
@@ -170,8 +170,8 @@ export class CompilationEngine {
 
   writeUnaryOp(op) {
     const opMap = {
-      "-": VMWriter.commands.neg,
-      "~": VMWriter.commands.not,
+      "-": VMWriter.commands.NEG,
+      "~": VMWriter.commands.NOT,
     };
 
     if (op in opMap) {
@@ -180,23 +180,23 @@ export class CompilationEngine {
   }
 
   compileClass() {
-    this.eatKey(Analizer.nonTerminalKeywords.class);
+    this.eatKey(Analizer.nonTerminalKeywords.CLASS);
 
-    this.eatValue(Tokenizer.keywords.class);
+    this.eatValue(Tokenizer.keywords.CLASS);
     this.className = this.readValue();
 
     this.eatValue("{");
 
     while (
       this.treeBrowser.getCurrentNodeKey() ===
-      Analizer.nonTerminalKeywords.classVarDec
+      Analizer.nonTerminalKeywords.CLASS_VAR_DEC
     ) {
       this.compileClassVarDec();
     }
 
     while (
       this.treeBrowser.getCurrentNodeKey() ===
-      Analizer.nonTerminalKeywords.subroutineDec
+      Analizer.nonTerminalKeywords.SUBROUTINE_DEC
     ) {
       this.compileSubroutineDec();
     }
@@ -206,7 +206,7 @@ export class CompilationEngine {
   }
 
   compileClassVarDec() {
-    this.eatKey(Analizer.nonTerminalKeywords.classVarDec);
+    this.eatKey(Analizer.nonTerminalKeywords.CLASS_VAR_DEC);
 
     const kind = this.readValue();
     const type = this.readValue();
@@ -224,7 +224,7 @@ export class CompilationEngine {
   }
 
   compileSubroutineDec() {
-    this.eatKey(Analizer.nonTerminalKeywords.subroutineDec);
+    this.eatKey(Analizer.nonTerminalKeywords.SUBROUTINE_DEC);
     this.subroutineSymbolTable.startSubroutine();
 
     const kind = this.readValue();
@@ -239,17 +239,17 @@ export class CompilationEngine {
   }
 
   complieParameterList() {
-    if (this.currentSubroutine.kind === Analizer.subroutineDecKeywords.method) {
+    if (this.currentSubroutine.kind === Analizer.subroutineDecKeywords.METHOD) {
       this.subroutineSymbolTable.define(
-        Analizer.keywordConstant.this,
+        Analizer.keywordConstant.THIS,
         this.className,
-        SymbolTable.kind.argument
+        SymbolTable.kind.ARGUMENT
       );
     }
 
     const paramListIsEmpty = !this.treeBrowser.getCurrentNodeValue().length;
 
-    this.eatKey(Analizer.nonTerminalKeywords.parameterList);
+    this.eatKey(Analizer.nonTerminalKeywords.PARAMETER_LIST);
 
     if (paramListIsEmpty) {
       return;
@@ -257,42 +257,42 @@ export class CompilationEngine {
 
     const type = this.readValue();
     const name = this.readValue();
-    this.subroutineSymbolTable.define(name, type, SymbolTable.kind.argument);
+    this.subroutineSymbolTable.define(name, type, SymbolTable.kind.ARGUMENT);
 
     while (this.treeBrowser.getCurrentNodeValue() === ",") {
       this.eatValue(",");
       const type = this.readValue();
       const name = this.readValue();
-      this.subroutineSymbolTable.define(name, type, SymbolTable.kind.argument);
+      this.subroutineSymbolTable.define(name, type, SymbolTable.kind.ARGUMENT);
     }
   }
 
   complieSubroutineBody() {
     const { name, kind } = this.currentSubroutine;
 
-    this.eatKey(Analizer.nonTerminalKeywords.subroutineBody);
+    this.eatKey(Analizer.nonTerminalKeywords.SUBROUTINE_BODY);
     this.eatValue("{");
 
     while (
       this.treeBrowser.getCurrentNodeKey() ===
-      Analizer.nonTerminalKeywords.varDec
+      Analizer.nonTerminalKeywords.VAR_DEC
     ) {
       this.compileVarDec();
     }
 
     const fnName = [this.className, name].join(".");
-    const nLocals = this.subroutineSymbolTable.varCount(SymbolTable.kind.local);
+    const nLocals = this.subroutineSymbolTable.varCount(SymbolTable.kind.LOCAL);
 
     this.writer.wrtieFunction(fnName, nLocals);
 
-    if (kind === Analizer.subroutineDecKeywords.constructor) {
-      const nFields = this.classSymbolTable.varCount(SymbolTable.kind.field);
-      this.writer.writePush(VMWriter.segment.constant, nFields);
+    if (kind === Analizer.subroutineDecKeywords.CONSTRUCTOR) {
+      const nFields = this.classSymbolTable.varCount(SymbolTable.kind.FIELD);
+      this.writer.writePush(VMWriter.segment.CONSTANT, nFields);
       this.writer.writeCall("Memory.alloc", 1);
-      this.writer.writePop(VMWriter.segment.pointer, 0);
-    } else if (kind === Analizer.subroutineDecKeywords.method) {
-      this.writer.writePush(VMWriter.segment.argument, 0);
-      this.writer.writePop(VMWriter.segment.pointer, 0);
+      this.writer.writePop(VMWriter.segment.POINTER, 0);
+    } else if (kind === Analizer.subroutineDecKeywords.METHOD) {
+      this.writer.writePush(VMWriter.segment.ARGUMENT, 0);
+      this.writer.writePop(VMWriter.segment.POINTER, 0);
     }
 
     this.compileStatements();
@@ -301,10 +301,10 @@ export class CompilationEngine {
   }
 
   compileVarDec() {
-    this.eatKey(Analizer.nonTerminalKeywords.varDec);
+    this.eatKey(Analizer.nonTerminalKeywords.VAR_DEC);
 
-    this.eatValue(Tokenizer.keywords.var);
-    const kind = SymbolTable.kind.local;
+    this.eatValue(Tokenizer.keywords.VAR);
+    const kind = SymbolTable.kind.LOCAL;
     const type = this.readValue();
     const name = this.readValue();
 
@@ -320,40 +320,40 @@ export class CompilationEngine {
   }
 
   compileStatements() {
-    this.eatKey(Analizer.nonTerminalKeywords.statements);
+    this.eatKey(Analizer.nonTerminalKeywords.STATEMENTS);
 
     while (
       [
-        Analizer.nonTerminalKeywords.returnStatement,
-        Analizer.nonTerminalKeywords.letStatement,
-        Analizer.nonTerminalKeywords.ifStatement,
-        Analizer.nonTerminalKeywords.whileStatement,
-        Analizer.nonTerminalKeywords.doStatement,
+        Analizer.nonTerminalKeywords.RETURN_STATEMENT,
+        Analizer.nonTerminalKeywords.LET_STATEMENT,
+        Analizer.nonTerminalKeywords.IF_STATEMENT,
+        Analizer.nonTerminalKeywords.WHILE_STATEMENT,
+        Analizer.nonTerminalKeywords.DO_STATEMENT,
       ].includes(this.treeBrowser.getCurrentNodeKey())
     ) {
       if (
         this.treeBrowser.getCurrentNodeKey() ===
-        Analizer.nonTerminalKeywords.returnStatement
+        Analizer.nonTerminalKeywords.RETURN_STATEMENT
       ) {
         this.compileReturn();
       } else if (
         this.treeBrowser.getCurrentNodeKey() ===
-        Analizer.nonTerminalKeywords.letStatement
+        Analizer.nonTerminalKeywords.LET_STATEMENT
       ) {
         this.compileLet();
       } else if (
         this.treeBrowser.getCurrentNodeKey() ===
-        Analizer.nonTerminalKeywords.ifStatement
+        Analizer.nonTerminalKeywords.IF_STATEMENT
       ) {
         this.compileIf();
       } else if (
         this.treeBrowser.getCurrentNodeKey() ===
-        Analizer.nonTerminalKeywords.whileStatement
+        Analizer.nonTerminalKeywords.WHILE_STATEMENT
       ) {
         this.compileWhile();
       } else if (
         this.treeBrowser.getCurrentNodeKey() ===
-        Analizer.nonTerminalKeywords.doStatement
+        Analizer.nonTerminalKeywords.DO_STATEMENT
       ) {
         this.compileDo();
       }
@@ -361,8 +361,8 @@ export class CompilationEngine {
   }
 
   compileLet() {
-    this.eatKey(Analizer.nonTerminalKeywords.letStatement);
-    this.eatValue(Analizer.statementKeywords.let);
+    this.eatKey(Analizer.nonTerminalKeywords.LET_STATEMENT);
+    this.eatValue(Analizer.statementKeywords.LET);
     const varName = this.readValue();
 
     const isArrayIndexAssignment =
@@ -373,17 +373,17 @@ export class CompilationEngine {
       this.compileExpression();
       this.eatValue("]");
       this.writePushVar(varName);
-      this.writer.writeArithmetic(VMWriter.commands.add);
+      this.writer.writeArithmetic(VMWriter.commands.ADD);
     }
 
     this.eatValue("=");
     this.compileExpression();
 
     if (isArrayIndexAssignment) {
-      this.writer.writePop(VMWriter.segment.temp, 0);
-      this.writer.writePop(VMWriter.segment.pointer, 1);
-      this.writer.writePush(VMWriter.segment.temp, 0);
-      this.writer.writePop(VMWriter.segment.that, 0);
+      this.writer.writePop(VMWriter.segment.TEMP, 0);
+      this.writer.writePop(VMWriter.segment.POINTER, 1);
+      this.writer.writePush(VMWriter.segment.TEMP, 0);
+      this.writer.writePop(VMWriter.segment.THAT, 0);
     } else {
       this.writePopVar(varName);
     }
@@ -392,14 +392,14 @@ export class CompilationEngine {
   }
 
   compileIf() {
-    this.eatKey(Analizer.nonTerminalKeywords.ifStatement);
+    this.eatKey(Analizer.nonTerminalKeywords.IF_STATEMENT);
 
     const callId = genId();
     const ifTrueLabel = `IF_TRUE_${callId}`;
     const ifFalseLabel = `IF_FALSE_${callId}`;
     const ifEndLabel = `IF_END_${callId}`;
 
-    this.eatValue(Analizer.statementKeywords.if);
+    this.eatValue(Analizer.statementKeywords.IF);
     this.eatValue("(");
     this.compileExpression();
     this.eatValue(")");
@@ -414,7 +414,7 @@ export class CompilationEngine {
 
     const withElse =
       this.treeBrowser.getCurrentNodeValue() ===
-      Analizer.statementKeywords.else;
+      Analizer.statementKeywords.ELSE;
 
     if (withElse) {
       this.writer.writeGoto(ifEndLabel);
@@ -423,7 +423,7 @@ export class CompilationEngine {
     this.writer.writeLabel(ifFalseLabel);
 
     if (withElse) {
-      this.eatValue(Analizer.statementKeywords.else);
+      this.eatValue(Analizer.statementKeywords.ELSE);
       this.eatValue("{");
       this.compileStatements();
       this.eatValue("}");
@@ -436,16 +436,16 @@ export class CompilationEngine {
     const whileExpLabel = `WHILE_EXP_${callId}`;
     const whileEndLabel = `WHILE_END_${callId}`;
 
-    this.eatKey(Analizer.nonTerminalKeywords.whileStatement);
+    this.eatKey(Analizer.nonTerminalKeywords.WHILE_STATEMENT);
 
     this.writer.writeLabel(whileExpLabel);
 
-    this.eatValue(Analizer.statementKeywords.while);
+    this.eatValue(Analizer.statementKeywords.WHILE);
     this.eatValue("(");
     this.compileExpression();
     this.eatValue(")");
 
-    this.writer.writeArithmetic(VMWriter.commands.not);
+    this.writer.writeArithmetic(VMWriter.commands.NOT);
     this.writer.writeIf(whileEndLabel);
 
     this.eatValue("{");
@@ -457,8 +457,8 @@ export class CompilationEngine {
   }
 
   compileDo() {
-    this.eatKey(Analizer.nonTerminalKeywords.doStatement);
-    this.eatValue(Analizer.statementKeywords.do);
+    this.eatKey(Analizer.nonTerminalKeywords.DO_STATEMENT);
+    this.eatValue(Analizer.statementKeywords.DO);
 
     const identifier = this.readValue();
     const nextSymbol = this.treeBrowser.getCurrentNodeValue();
@@ -466,21 +466,21 @@ export class CompilationEngine {
     this.compileSubroutineCall(identifier, nextSymbol);
     this.eatValue(";");
 
-    this.writer.writePop(VMWriter.segment.temp, 0);
+    this.writer.writePop(VMWriter.segment.TEMP, 0);
   }
 
   compileReturn() {
-    this.eatKey(Analizer.nonTerminalKeywords.returnStatement);
+    this.eatKey(Analizer.nonTerminalKeywords.RETURN_STATEMENT);
 
-    this.eatValue(Analizer.statementKeywords.return);
+    this.eatValue(Analizer.statementKeywords.RETURN);
 
     const { returnType } = this.currentSubroutine;
 
     if (returnType === "void") {
-      this.writer.writePush(VMWriter.segment.constant, 0);
+      this.writer.writePush(VMWriter.segment.CONSTANT, 0);
     } else if (
       this.treeBrowser.getCurrentNodeKey() ===
-      Analizer.nonTerminalKeywords.expression
+      Analizer.nonTerminalKeywords.EXPRESSION
     ) {
       this.compileExpression();
     }
@@ -491,7 +491,7 @@ export class CompilationEngine {
   }
 
   compileExpression() {
-    this.eatKey(Analizer.nonTerminalKeywords.expression);
+    this.eatKey(Analizer.nonTerminalKeywords.EXPRESSION);
 
     this.compileTerm();
 
@@ -503,7 +503,7 @@ export class CompilationEngine {
   }
 
   compileTerm() {
-    this.eatKey(Analizer.nonTerminalKeywords.term);
+    this.eatKey(Analizer.nonTerminalKeywords.TERM);
 
     const nodeValue = this.treeBrowser.getCurrentNodeValue();
 
@@ -517,39 +517,39 @@ export class CompilationEngine {
     const nodeKey = this.treeBrowser.getCurrentNodeKey();
     let op;
 
-    if (nodeKey === Tokenizer.tokenTypes.symbol) {
+    if (nodeKey === Tokenizer.tokenTypes.SYMBOL) {
       op = this.readValue();
-      this.eatKey(Analizer.nonTerminalKeywords.term);
+      this.eatKey(Analizer.nonTerminalKeywords.TERM);
     }
 
     const tokenType = this.treeBrowser.getCurrentNodeKey();
     const variable = this.readValue();
 
     if (Object.values(Analizer.keywordConstant).includes(variable)) {
-      if (variable === Analizer.keywordConstant.true) {
-        this.writer.writePush(VMWriter.segment.constant, 0);
-        this.writer.writeArithmetic(VMWriter.commands.not);
+      if (variable === Analizer.keywordConstant.TRUE) {
+        this.writer.writePush(VMWriter.segment.CONSTANT, 0);
+        this.writer.writeArithmetic(VMWriter.commands.NOT);
       } else if (
-        variable === Analizer.keywordConstant.false ||
-        variable === Analizer.keywordConstant.null
+        variable === Analizer.keywordConstant.FALSE ||
+        variable === Analizer.keywordConstant.NULL
       ) {
-        this.writer.writePush(VMWriter.segment.constant, 0);
-      } else if (variable === Analizer.keywordConstant.this) {
-        this.writer.writePush(VMWriter.segment.pointer, 0);
+        this.writer.writePush(VMWriter.segment.CONSTANT, 0);
+      } else if (variable === Analizer.keywordConstant.THIS) {
+        this.writer.writePush(VMWriter.segment.POINTER, 0);
       }
-    } else if (tokenType === Tokenizer.tokenTypes.integerConstant) {
-      this.writer.writePush(VMWriter.segment.constant, variable);
-    } else if (tokenType === Tokenizer.tokenTypes.stringConstant) {
-      this.writer.writePush(VMWriter.segment.constant, variable.length);
+    } else if (tokenType === Tokenizer.tokenTypes.INTEGER_CONSTANT) {
+      this.writer.writePush(VMWriter.segment.CONSTANT, variable);
+    } else if (tokenType === Tokenizer.tokenTypes.STRING_CONSTANT) {
+      this.writer.writePush(VMWriter.segment.CONSTANT, variable.length);
       this.writer.writeCall("String.new", 1);
 
       if (variable !== "") {
         variable.split("").forEach((char) => {
-          this.writer.writePush(VMWriter.segment.constant, char.charCodeAt());
+          this.writer.writePush(VMWriter.segment.CONSTANT, char.charCodeAt());
           this.writer.writeCall("String.appendChar", 2);
         });
       }
-    } else if (tokenType === Tokenizer.tokenTypes.identifier) {
+    } else if (tokenType === Tokenizer.tokenTypes.IDENTIFIER) {
       const nextSymbol = this.treeBrowser.getCurrentNodeValue();
 
       if (nextSymbol === "(" || nextSymbol === ".") {
@@ -559,9 +559,9 @@ export class CompilationEngine {
         this.compileExpression();
         this.eatValue("]");
         this.writePushVar(variable);
-        this.writer.writeArithmetic(VMWriter.commands.add);
-        this.writer.writePop(VMWriter.segment.pointer, 1);
-        this.writer.writePush(VMWriter.segment.that, 0);
+        this.writer.writeArithmetic(VMWriter.commands.ADD);
+        this.writer.writePop(VMWriter.segment.POINTER, 1);
+        this.writer.writePush(VMWriter.segment.THAT, 0);
       } else {
         this.writePushVar(variable);
       }
@@ -577,7 +577,7 @@ export class CompilationEngine {
     if (nextSymbol === "(") {
       this.eatValue("(");
 
-      this.writer.writePush(VMWriter.segment.pointer, 0);
+      this.writer.writePush(VMWriter.segment.POINTER, 0);
 
       const nArgs = this.compileExpressionList();
       this.eatValue(")");
@@ -607,7 +607,7 @@ export class CompilationEngine {
     const isEmpty = !this.treeBrowser.getCurrentNodeValue().length;
     let nArgs = 0;
 
-    this.eatKey(Analizer.nonTerminalKeywords.expressionList);
+    this.eatKey(Analizer.nonTerminalKeywords.EXPRESSION_LIST);
 
     if (isEmpty) {
       return nArgs;

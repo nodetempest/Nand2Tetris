@@ -2,26 +2,26 @@ import fs from "fs";
 
 export class VMWriter {
   static segment = {
-    constant: "constant",
-    argument: "argument",
-    local: "local",
-    static: "static",
-    this: "this",
-    that: "that",
-    pointer: "pointer",
-    temp: "temp",
+    CONSTANT: "constant",
+    ARGUMENT: "argument",
+    LOCAL: "local",
+    STATIC: "static",
+    THIS: "this",
+    THAT: "that",
+    POINTER: "pointer",
+    TEMP: "temp",
   };
 
   static commands = {
-    add: "add",
-    sub: "sub",
-    neg: "neg",
-    eq: "eq",
-    gt: "gt",
-    lt: "lt",
-    and: "and",
-    or: "or",
-    not: "not",
+    ADD: "add",
+    SUB: "sub",
+    NEG: "neg",
+    EQ: "eq",
+    GT: "gt",
+    LT: "lt",
+    AND: "and",
+    OR: "or",
+    NOT: "not",
   };
 
   constructor(outputFile) {

@@ -24,35 +24,35 @@ export class Tokenizer {
   ];
 
   static keywords = {
-    class: "class",
-    constructor: "constructor",
-    function: "function",
-    method: "method",
-    field: "field",
-    static: "static",
-    var: "var",
-    int: "int",
-    char: "char",
-    boolean: "boolean",
-    void: "void",
-    true: "true",
-    false: "false",
-    null: "null",
-    this: "this",
-    let: "let",
-    do: "do",
-    if: "if",
-    else: "else",
-    while: "while",
-    return: "return",
+    CLASS: "class",
+    CONSTRUCTOR: "constructor",
+    FUNCTION: "function",
+    METHOD: "method",
+    FIELD: "field",
+    STATIC: "static",
+    VAR: "var",
+    INT: "int",
+    CHAR: "char",
+    BOOLEAN: "boolean",
+    VOID: "void",
+    TRUE: "true",
+    FALSE: "false",
+    NULL: "null",
+    THIS: "this",
+    LET: "let",
+    DO: "do",
+    IF: "if",
+    ELSE: "else",
+    WHILE: "while",
+    RETURN: "return",
   };
 
   static tokenTypes = {
-    keyword: "keyword",
-    symbol: "symbol",
-    integerConstant: "integerConstant",
-    stringConstant: "stringConstant",
-    identifier: "identifier",
+    KEYWORD: "keyword",
+    SYMBOL: "symbol",
+    INTEGER_CONSTANT: "integerConstant",
+    STRING_CONSTANT: "stringConstant",
+    IDENTIFIER: "identifier",
   };
 
   static isSymbol(value) {
@@ -73,11 +73,11 @@ export class Tokenizer {
 
   static getTokenType(value) {
     return [
-      [Tokenizer.isStringConstant, Tokenizer.tokenTypes.stringConstant],
-      [Tokenizer.isIntegerConstant, Tokenizer.tokenTypes.integerConstant],
-      [Tokenizer.isSymbol, Tokenizer.tokenTypes.symbol],
-      [Tokenizer.isKeyword, Tokenizer.tokenTypes.keyword],
-      [() => true, Tokenizer.tokenTypes.identifier],
+      [Tokenizer.isStringConstant, Tokenizer.tokenTypes.STRING_CONSTANT],
+      [Tokenizer.isIntegerConstant, Tokenizer.tokenTypes.INTEGER_CONSTANT],
+      [Tokenizer.isSymbol, Tokenizer.tokenTypes.SYMBOL],
+      [Tokenizer.isKeyword, Tokenizer.tokenTypes.KEYWORD],
+      [() => true, Tokenizer.tokenTypes.IDENTIFIER],
     ].find(([validate]) => validate(value))[1];
   }
 
@@ -111,7 +111,7 @@ export class Tokenizer {
       const tokenType = Tokenizer.getTokenType(tokenValue);
 
       // '"hello"' --> 'hello'
-      if (tokenType === Tokenizer.tokenTypes.stringConstant) {
+      if (tokenType === Tokenizer.tokenTypes.STRING_CONSTANT) {
         tokenValue = tokenValue.slice(1, -1);
       }
 

@@ -4,46 +4,46 @@ import { last } from "./utils.mjs";
 
 export class CompilationEngine {
   static classVarDecKeywords = {
-    static: Tokenizer.keywords.static,
-    field: Tokenizer.keywords.field,
+    STATIC: Tokenizer.keywords.STATIC,
+    FIELD: Tokenizer.keywords.FIELD,
   };
   static subroutineDecKeywords = {
-    constructor: Tokenizer.keywords.constructor,
-    function: Tokenizer.keywords.function,
-    method: Tokenizer.keywords.method,
+    CONSTRUCTOR: Tokenizer.keywords.CONSTRUCTOR,
+    FUNCTION: Tokenizer.keywords.FUNCTION,
+    METHOD: Tokenizer.keywords.METHOD,
   };
   static statementKeywords = {
-    let: Tokenizer.keywords.let,
-    if: Tokenizer.keywords.if,
-    else: Tokenizer.keywords.else,
-    while: Tokenizer.keywords.while,
-    do: Tokenizer.keywords.do,
-    return: Tokenizer.keywords.return,
+    LET: Tokenizer.keywords.LET,
+    IF: Tokenizer.keywords.IF,
+    ELSE: Tokenizer.keywords.ELSE,
+    WHILE: Tokenizer.keywords.WHILE,
+    DO: Tokenizer.keywords.DO,
+    RETURN: Tokenizer.keywords.RETURN,
   };
   static op = ["+", "-", "*", "/", "&", "|", ">", "<", "="];
   static unaryOp = ["~", "-"];
   static keywordConstant = {
-    true: Tokenizer.keywords.true,
-    false: Tokenizer.keywords.false,
-    null: Tokenizer.keywords.null,
-    this: Tokenizer.keywords.this,
+    TRUE: Tokenizer.keywords.TRUE,
+    FALSE: Tokenizer.keywords.FALSE,
+    NULL: Tokenizer.keywords.NULL,
+    THIS: Tokenizer.keywords.THIS,
   };
   static nonTerminalKeywords = {
-    class: "class",
-    classVarDec: "classVarDec",
-    subroutineDec: "subroutineDec",
-    parameterList: "parameterList",
-    subroutineBody: "subroutineBody",
-    varDec: "varDec",
-    statements: "statements",
-    letStatement: "letStatement",
-    ifStatement: "ifStatement",
-    whileStatement: "whileStatement",
-    doStatement: "doStatement",
-    returnStatement: "returnStatement",
-    expression: "expression",
-    term: "term",
-    expressionList: "expressionList",
+    CLASS: "class",
+    CLASS_VAR_DEC: "classVarDec",
+    SUBROUTINE_DEC: "subroutineDec",
+    PARAMETER_LIST: "parameterList",
+    SUBROUTINE_BODY: "subroutineBody",
+    VAR_DEC: "varDec",
+    STATEMENTS: "statements",
+    LET_STATEMENT: "letStatement",
+    IF_STATEMENT: "ifStatement",
+    WHILE_STATEMENT: "whileStatement",
+    DO_STATEMENT: "doStatement",
+    RETURN_STATEMENT: "returnStatement",
+    EXPRESSION: "expression",
+    TERM: "term",
+    EXPRESSION_LIST: "expressionList",
   };
 
   tree = { class: [] };
@@ -96,7 +96,7 @@ export class CompilationEngine {
   }
 
   compileClass() {
-    this.eat(CompilationEngine.nonTerminalKeywords.class);
+    this.eat(CompilationEngine.nonTerminalKeywords.CLASS);
     this.eat(this.tokenizer.getToken().value);
     this.eat("{");
 
@@ -121,7 +121,7 @@ export class CompilationEngine {
   }
 
   compileClassVarDec() {
-    this.createAndSetNode(CompilationEngine.nonTerminalKeywords.classVarDec);
+    this.createAndSetNode(CompilationEngine.nonTerminalKeywords.CLASS_VAR_DEC);
     this.eat(this.tokenizer.getToken().value);
     this.eat(this.tokenizer.getToken().value);
     this.eat(this.tokenizer.getToken().value);
@@ -136,7 +136,7 @@ export class CompilationEngine {
   }
 
   compileSubroutineDec() {
-    this.createAndSetNode(CompilationEngine.nonTerminalKeywords.subroutineDec);
+    this.createAndSetNode(CompilationEngine.nonTerminalKeywords.SUBROUTINE_DEC);
     this.eat(this.tokenizer.getToken().value);
     this.eat(this.tokenizer.getToken().value);
     this.eat(this.tokenizer.getToken().value);
@@ -148,7 +148,7 @@ export class CompilationEngine {
   }
 
   complieParameterList() {
-    this.createAndSetNode(CompilationEngine.nonTerminalKeywords.parameterList);
+    this.createAndSetNode(CompilationEngine.nonTerminalKeywords.PARAMETER_LIST);
 
     const isEmpty = this.tokenizer.getToken().value === ")";
 
@@ -167,7 +167,9 @@ export class CompilationEngine {
   }
 
   complieSubroutineBody() {
-    this.createAndSetNode(CompilationEngine.nonTerminalKeywords.subroutineBody);
+    this.createAndSetNode(
+      CompilationEngine.nonTerminalKeywords.SUBROUTINE_BODY
+    );
     this.eat("{");
 
     while (this.tokenizer.getToken().value === "var") {
@@ -181,7 +183,7 @@ export class CompilationEngine {
   }
 
   compileVarDec() {
-    this.createAndSetNode(CompilationEngine.nonTerminalKeywords.varDec);
+    this.createAndSetNode(CompilationEngine.nonTerminalKeywords.VAR_DEC);
     this.eat("var");
     this.eat(this.tokenizer.getToken().value);
     this.eat(this.tokenizer.getToken().value);
@@ -196,7 +198,7 @@ export class CompilationEngine {
   }
 
   compileStatements() {
-    this.createAndSetNode(CompilationEngine.nonTerminalKeywords.statements);
+    this.createAndSetNode(CompilationEngine.nonTerminalKeywords.STATEMENTS);
 
     while (
       Object.values(CompilationEngine.statementKeywords).includes(
@@ -205,15 +207,15 @@ export class CompilationEngine {
     ) {
       const tokenValue = this.tokenizer.getToken().value;
 
-      if (tokenValue === CompilationEngine.statementKeywords.let) {
+      if (tokenValue === CompilationEngine.statementKeywords.LET) {
         this.compileLet();
-      } else if (tokenValue === CompilationEngine.statementKeywords.if) {
+      } else if (tokenValue === CompilationEngine.statementKeywords.IF) {
         this.compileIf();
-      } else if (tokenValue === CompilationEngine.statementKeywords.while) {
+      } else if (tokenValue === CompilationEngine.statementKeywords.WHILE) {
         this.compileWhile();
-      } else if (tokenValue === CompilationEngine.statementKeywords.do) {
+      } else if (tokenValue === CompilationEngine.statementKeywords.DO) {
         this.compileDo();
-      } else if (tokenValue === CompilationEngine.statementKeywords.return) {
+      } else if (tokenValue === CompilationEngine.statementKeywords.RETURN) {
         this.compileReturn();
       }
     }
@@ -222,8 +224,8 @@ export class CompilationEngine {
   }
 
   compileLet() {
-    this.createAndSetNode(CompilationEngine.nonTerminalKeywords.letStatement);
-    this.eat(CompilationEngine.statementKeywords.let);
+    this.createAndSetNode(CompilationEngine.nonTerminalKeywords.LET_STATEMENT);
+    this.eat(CompilationEngine.statementKeywords.LET);
     this.eat(this.tokenizer.getToken().value);
 
     if (this.tokenizer.getToken().value === "[") {
@@ -239,8 +241,8 @@ export class CompilationEngine {
   }
 
   compileIf() {
-    this.createAndSetNode(CompilationEngine.nonTerminalKeywords.ifStatement);
-    this.eat(CompilationEngine.statementKeywords.if);
+    this.createAndSetNode(CompilationEngine.nonTerminalKeywords.IF_STATEMENT);
+    this.eat(CompilationEngine.statementKeywords.IF);
     this.eat("(");
     this.compileExpression();
     this.eat(")");
@@ -250,9 +252,9 @@ export class CompilationEngine {
 
     if (
       this.tokenizer.getToken().value ===
-      CompilationEngine.statementKeywords.else
+      CompilationEngine.statementKeywords.ELSE
     ) {
-      this.eat(CompilationEngine.statementKeywords.else);
+      this.eat(CompilationEngine.statementKeywords.ELSE);
       this.eat("{");
       this.compileStatements();
       this.eat("}");
@@ -262,8 +264,10 @@ export class CompilationEngine {
   }
 
   compileWhile() {
-    this.createAndSetNode(CompilationEngine.nonTerminalKeywords.whileStatement);
-    this.eat(CompilationEngine.statementKeywords.while);
+    this.createAndSetNode(
+      CompilationEngine.nonTerminalKeywords.WHILE_STATEMENT
+    );
+    this.eat(CompilationEngine.statementKeywords.WHILE);
     this.eat("(");
     this.compileExpression();
     this.eat(")");
@@ -274,8 +278,8 @@ export class CompilationEngine {
   }
 
   compileDo() {
-    this.createAndSetNode(CompilationEngine.nonTerminalKeywords.doStatement);
-    this.eat(CompilationEngine.statementKeywords.do);
+    this.createAndSetNode(CompilationEngine.nonTerminalKeywords.DO_STATEMENT);
+    this.eat(CompilationEngine.statementKeywords.DO);
     this.eat(this.tokenizer.getToken().value);
 
     if (this.tokenizer.getToken().value === ".") {
@@ -292,9 +296,9 @@ export class CompilationEngine {
 
   compileReturn() {
     this.createAndSetNode(
-      CompilationEngine.nonTerminalKeywords.returnStatement
+      CompilationEngine.nonTerminalKeywords.RETURN_STATEMENT
     );
-    this.eat(CompilationEngine.statementKeywords.return);
+    this.eat(CompilationEngine.statementKeywords.RETURN);
 
     if (this.tokenizer.getToken().value !== ";") {
       this.compileExpression();
@@ -305,7 +309,7 @@ export class CompilationEngine {
   }
 
   compileExpression() {
-    this.createAndSetNode(CompilationEngine.nonTerminalKeywords.expression);
+    this.createAndSetNode(CompilationEngine.nonTerminalKeywords.EXPRESSION);
     this.compileTerm();
 
     while (CompilationEngine.op.includes(this.tokenizer.getToken().value)) {
@@ -317,7 +321,7 @@ export class CompilationEngine {
   }
 
   compileTerm() {
-    this.createAndSetNode(CompilationEngine.nonTerminalKeywords.term);
+    this.createAndSetNode(CompilationEngine.nonTerminalKeywords.TERM);
 
     if (this.tokenizer.getToken().value === "(") {
       this.eat("(");
@@ -356,7 +360,9 @@ export class CompilationEngine {
   }
 
   compileExpressionList() {
-    this.createAndSetNode(CompilationEngine.nonTerminalKeywords.expressionList);
+    this.createAndSetNode(
+      CompilationEngine.nonTerminalKeywords.EXPRESSION_LIST
+    );
 
     if (this.tokenizer.getToken().value === ")") {
       this.backToParentNode();
