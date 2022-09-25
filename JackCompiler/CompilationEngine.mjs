@@ -38,6 +38,8 @@ export class CompilationEngine {
     this.compileClass();
   }
 
+  // Assertion functions
+
   eatKey(key) {
     const currentNodeKey = this.treeBrowser.getCurrentNodeKey();
 
@@ -82,6 +84,8 @@ export class CompilationEngine {
     }
   }
 
+  // Read helpers
+
   readValue() {
     const value = this.treeBrowser.getCurrentNodeValue();
     this.treeBrowser.advance();
@@ -94,6 +98,8 @@ export class CompilationEngine {
     return key;
   }
 
+  // Subroutine helper
+
   setCurrentSubroutine(name, returnType, kind) {
     this.currentSubroutine = {
       name,
@@ -101,6 +107,8 @@ export class CompilationEngine {
       kind,
     };
   }
+
+  // Symbol table helpers
 
   varExists(varName) {
     return (
@@ -128,6 +136,8 @@ export class CompilationEngine {
 
     return { segment, type, index };
   }
+
+  // Write helpers
 
   writePushVar(varName) {
     if (!this.varExists(varName)) {
@@ -179,6 +189,10 @@ export class CompilationEngine {
     }
   }
 
+  // Compile functions
+
+  // Example:
+  // class Point {...}
   compileClass() {
     this.eatKey(Analizer.nonTerminalKeywords.CLASS);
 
@@ -205,6 +219,9 @@ export class CompilationEngine {
     this.eatKey(null);
   }
 
+  // Example:
+  // field int x, y;
+  // static Car myCar;
   compileClassVarDec() {
     this.eatKey(Analizer.nonTerminalKeywords.CLASS_VAR_DEC);
 
@@ -223,6 +240,9 @@ export class CompilationEngine {
     this.eatValue(";");
   }
 
+  // Example:
+  // method void print () {...}
+  // function int getWordsCount (string input, boolean includeSymbols) {...}
   compileSubroutineDec() {
     this.eatKey(Analizer.nonTerminalKeywords.SUBROUTINE_DEC);
     this.subroutineSymbolTable.startSubroutine();
@@ -238,6 +258,9 @@ export class CompilationEngine {
     this.complieSubroutineBody();
   }
 
+  // Example:
+  // suppose function: method void showPoint (int x, int y) {...}
+  // then list is: int x, int y
   complieParameterList() {
     if (this.currentSubroutine.kind === Analizer.subroutineDecKeywords.METHOD) {
       this.subroutineSymbolTable.define(
@@ -267,6 +290,9 @@ export class CompilationEngine {
     }
   }
 
+  // Example:
+  // suppose function: method void showPoint (int x, int y) {...}
+  // then body is: {...}
   complieSubroutineBody() {
     const { name, kind } = this.currentSubroutine;
 
@@ -300,6 +326,9 @@ export class CompilationEngine {
     this.eatValue("}");
   }
 
+  // Example
+  // var int x, y;
+  // var Point p;
   compileVarDec() {
     this.eatKey(Analizer.nonTerminalKeywords.VAR_DEC);
 
@@ -319,6 +348,10 @@ export class CompilationEngine {
     this.eatValue(";");
   }
 
+  // Example:
+  // method void show () { <statements> }
+  // if (<expression>) { <statements> }
+  // while (<expression>) { statements> }
   compileStatements() {
     this.eatKey(Analizer.nonTerminalKeywords.STATEMENTS);
 
@@ -360,6 +393,9 @@ export class CompilationEngine {
     }
   }
 
+  // Example:
+  // let x = 5;
+  // let p = Point.new(2, 3);
   compileLet() {
     this.eatKey(Analizer.nonTerminalKeywords.LET_STATEMENT);
     this.eatValue(Analizer.statementKeywords.LET);
@@ -391,6 +427,8 @@ export class CompilationEngine {
     this.eatValue(";");
   }
 
+  // Example:
+  // if (x = 5) { x = 7 } else { x = 8 }
   compileIf() {
     this.eatKey(Analizer.nonTerminalKeywords.IF_STATEMENT);
 
@@ -431,6 +469,8 @@ export class CompilationEngine {
     }
   }
 
+  // Example:
+  // while (i < max) { let i = i + 1; }
   compileWhile() {
     const callId = genId();
     const whileExpLabel = `WHILE_EXP_${callId}`;
@@ -456,6 +496,8 @@ export class CompilationEngine {
     this.writer.writeLabel(whileEndLabel);
   }
 
+  // Example
+  // do showPoint();
   compileDo() {
     this.eatKey(Analizer.nonTerminalKeywords.DO_STATEMENT);
     this.eatValue(Analizer.statementKeywords.DO);
@@ -469,6 +511,10 @@ export class CompilationEngine {
     this.writer.writePop(VMWriter.segment.TEMP, 0);
   }
 
+  // Example:
+  // return 5;
+  // return p1.add(p2);
+  // return;
   compileReturn() {
     this.eatKey(Analizer.nonTerminalKeywords.RETURN_STATEMENT);
 
@@ -490,6 +536,7 @@ export class CompilationEngine {
     this.writer.writeReturn();
   }
 
+  // term (op term)*
   compileExpression() {
     this.eatKey(Analizer.nonTerminalKeywords.EXPRESSION);
 
@@ -507,6 +554,7 @@ export class CompilationEngine {
 
     const nodeValue = this.treeBrowser.getCurrentNodeValue();
 
+    // Example: (2 + 3) * 5
     if (nodeValue === "(") {
       this.eatValue("(");
       this.compileExpression();
@@ -515,16 +563,19 @@ export class CompilationEngine {
     }
 
     const nodeKey = this.treeBrowser.getCurrentNodeKey();
-    let op;
+    let unaryOp;
 
+    // Example:
+    // unaryOp is symbol `-` in expression: 3 * -5
     if (nodeKey === Tokenizer.tokenTypes.SYMBOL) {
-      op = this.readValue();
+      unaryOp = this.readValue();
       this.eatKey(Analizer.nonTerminalKeywords.TERM);
     }
 
     const tokenType = this.treeBrowser.getCurrentNodeKey();
     const variable = this.readValue();
 
+    // handle true, false, this, null
     if (Object.values(Analizer.keywordConstant).includes(variable)) {
       if (variable === Analizer.keywordConstant.TRUE) {
         this.writer.writePush(VMWriter.segment.CONSTANT, 0);
@@ -537,9 +588,13 @@ export class CompilationEngine {
       } else if (variable === Analizer.keywordConstant.THIS) {
         this.writer.writePush(VMWriter.segment.POINTER, 0);
       }
-    } else if (tokenType === Tokenizer.tokenTypes.INTEGER_CONSTANT) {
+    }
+    // hadle integer constant
+    else if (tokenType === Tokenizer.tokenTypes.INTEGER_CONSTANT) {
       this.writer.writePush(VMWriter.segment.CONSTANT, variable);
-    } else if (tokenType === Tokenizer.tokenTypes.STRING_CONSTANT) {
+    }
+    // handle string constant
+    else if (tokenType === Tokenizer.tokenTypes.STRING_CONSTANT) {
       this.writer.writePush(VMWriter.segment.CONSTANT, variable.length);
       this.writer.writeCall("String.new", 1);
 
@@ -549,12 +604,25 @@ export class CompilationEngine {
           this.writer.writeCall("String.appendChar", 2);
         });
       }
-    } else if (tokenType === Tokenizer.tokenTypes.IDENTIFIER) {
+    }
+    // handle all types of identifiers, example:
+    // let x = xOffset;
+    // let x = p1.x + p2.x;
+    // let x = getXCoord();
+    // let count = Point.getTotalPoints();
+    // let arr[count + 5] = points[keys[3]];
+    else if (tokenType === Tokenizer.tokenTypes.IDENTIFIER) {
       const nextSymbol = this.treeBrowser.getCurrentNodeValue();
 
+      // Example:
+      // let x = getXCoord();
+      // let count = Point.getTotalPoints();
       if (nextSymbol === "(" || nextSymbol === ".") {
         this.compileSubroutineCall(variable, nextSymbol);
-      } else if (nextSymbol === "[") {
+      }
+      // Example:
+      // let arr[count + 5] = points[keys[3]];
+      else if (nextSymbol === "[") {
         this.eatValue("[");
         this.compileExpression();
         this.eatValue("]");
@@ -562,18 +630,29 @@ export class CompilationEngine {
         this.writer.writeArithmetic(VMWriter.commands.ADD);
         this.writer.writePop(VMWriter.segment.POINTER, 1);
         this.writer.writePush(VMWriter.segment.THAT, 0);
-      } else {
+      }
+      // Example
+      // let x = xOffset;
+      else {
         this.writePushVar(variable);
       }
-    } else if (variable === "(") {
+    }
+    // Special case when variable is unaryOp and followed by "("
+    // Example:
+    // let x = -(5 + 3)
+    else if (variable === "(") {
       this.compileExpression();
       this.eatValue(")");
     }
 
-    this.writeUnaryOp(op);
+    this.writeUnaryOp(unaryOp);
   }
 
+  // suppose subroutine call: do calcDistance(p1, p2);
+  // identifier is: calcDistance
+  // nextSymbol is: (
   compileSubroutineCall(identifier, nextSymbol) {
+    // Example: do calcDistance(p1, p2);
     if (nextSymbol === "(") {
       this.eatValue("(");
 
@@ -583,7 +662,9 @@ export class CompilationEngine {
       this.eatValue(")");
 
       this.writer.writeCall([this.className, identifier].join("."), nArgs + 1);
-    } else if (nextSymbol === ".") {
+    }
+    // do Point.staticMethodCalc(p1, p2);
+    else if (nextSymbol === ".") {
       this.eatValue(".");
 
       const methodName = this.readValue();
@@ -592,17 +673,34 @@ export class CompilationEngine {
       const nArgs = this.compileExpressionList();
       this.eatValue(")");
 
+      // Example:
+      // var Point p1, p2, p3;
+      // let p1 = Point.new(2, 3);
+      // let p2 = Point.new(4, 5);
+      // let p3 = p1.add(p2);
+      // from subroutine symbol table we know that
+      // p1 is a pointer and contains address of constructed `Point`
+      // that we need to pass to called function as 0 argument
+      // p1.add(p2) --> add(p1, p2)
       if (this.varExists(identifier)) {
         this.writePushVar(identifier);
 
         const { type } = this.lookupVar(identifier);
         this.writer.writeCall([type, methodName].join("."), nArgs + 1);
-      } else {
+      }
+      // else it is static function and we do not need
+      // to pass callee's address as 0 argument
+      // Example:
+      // let distance = Point.measureDistance(p1, p2);
+      // Point.measureDistance(p1, p2) --> Point.measureDistance(p1, p2)
+      else {
         this.writer.writeCall([identifier, methodName].join("."), nArgs);
       }
     }
   }
 
+  // suppose subroutine call: do calcDistance(p1.add(p3), p2);
+  // expression list is: p1.add(p3), p2
   compileExpressionList() {
     const isEmpty = !this.treeBrowser.getCurrentNodeValue().length;
     let nArgs = 0;
