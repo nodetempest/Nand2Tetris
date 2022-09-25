@@ -23,29 +23,29 @@ export class Tokenizer {
     "~",
   ];
 
-  static keywords = [
-    "class",
-    "constructor",
-    "function",
-    "method",
-    "field",
-    "static",
-    "var",
-    "int",
-    "char",
-    "boolean",
-    "void",
-    "true",
-    "false",
-    "null",
-    "this",
-    "let",
-    "do",
-    "if",
-    "else",
-    "while",
-    "return",
-  ];
+  static keywords = {
+    class: "class",
+    constructor: "constructor",
+    function: "function",
+    method: "method",
+    field: "field",
+    static: "static",
+    var: "var",
+    int: "int",
+    char: "char",
+    boolean: "boolean",
+    void: "void",
+    true: "true",
+    false: "false",
+    null: "null",
+    this: "this",
+    let: "let",
+    do: "do",
+    if: "if",
+    else: "else",
+    while: "while",
+    return: "return",
+  };
 
   static tokenTypes = {
     keyword: "keyword",
@@ -60,7 +60,7 @@ export class Tokenizer {
   }
 
   static isKeyword(value) {
-    return Tokenizer.keywords.includes(value);
+    return Object.values(Tokenizer.keywords).includes(value);
   }
 
   static isStringConstant(value) {

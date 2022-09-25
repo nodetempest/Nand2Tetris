@@ -15,7 +15,7 @@ export class CompilationEngine {
   className = "Main";
 
   currentSubroutine = {
-    kind: "function",
+    kind: Analizer.subroutineDecKeywords.function,
     returnType: "void",
     name: "main",
   };
@@ -182,7 +182,7 @@ export class CompilationEngine {
   compileClass() {
     this.eatKey(Analizer.nonTerminalKeywords.class);
 
-    this.eatValue("class");
+    this.eatValue(Tokenizer.keywords.class);
     this.className = this.readValue();
 
     this.eatValue("{");
@@ -239,9 +239,9 @@ export class CompilationEngine {
   }
 
   complieParameterList() {
-    if (this.currentSubroutine.kind === "method") {
+    if (this.currentSubroutine.kind === Analizer.subroutineDecKeywords.method) {
       this.subroutineSymbolTable.define(
-        "this",
+        Analizer.keywordConstant.this,
         this.className,
         SymbolTable.kind.argument
       );
@@ -285,12 +285,12 @@ export class CompilationEngine {
 
     this.writer.wrtieFunction(fnName, nLocals);
 
-    if (kind === "constructor") {
+    if (kind === Analizer.subroutineDecKeywords.constructor) {
       const nFields = this.classSymbolTable.varCount(SymbolTable.kind.field);
       this.writer.writePush(VMWriter.segment.constant, nFields);
       this.writer.writeCall("Memory.alloc", 1);
       this.writer.writePop(VMWriter.segment.pointer, 0);
-    } else if (kind === "method") {
+    } else if (kind === Analizer.subroutineDecKeywords.method) {
       this.writer.writePush(VMWriter.segment.argument, 0);
       this.writer.writePop(VMWriter.segment.pointer, 0);
     }
@@ -303,7 +303,7 @@ export class CompilationEngine {
   compileVarDec() {
     this.eatKey(Analizer.nonTerminalKeywords.varDec);
 
-    this.eatValue("var");
+    this.eatValue(Tokenizer.keywords.var);
     const kind = SymbolTable.kind.local;
     const type = this.readValue();
     const name = this.readValue();
@@ -362,7 +362,7 @@ export class CompilationEngine {
 
   compileLet() {
     this.eatKey(Analizer.nonTerminalKeywords.letStatement);
-    this.eatValue("let");
+    this.eatValue(Analizer.statementKeywords.let);
     const varName = this.readValue();
 
     const isArrayIndexAssignment =
@@ -399,7 +399,7 @@ export class CompilationEngine {
     const ifFalseLabel = `IF_FALSE_${callId}`;
     const ifEndLabel = `IF_END_${callId}`;
 
-    this.eatValue("if");
+    this.eatValue(Analizer.statementKeywords.if);
     this.eatValue("(");
     this.compileExpression();
     this.eatValue(")");
@@ -412,7 +412,9 @@ export class CompilationEngine {
     this.compileStatements();
     this.eatValue("}");
 
-    const withElse = this.treeBrowser.getCurrentNodeValue() === "else";
+    const withElse =
+      this.treeBrowser.getCurrentNodeValue() ===
+      Analizer.statementKeywords.else;
 
     if (withElse) {
       this.writer.writeGoto(ifEndLabel);
@@ -421,7 +423,7 @@ export class CompilationEngine {
     this.writer.writeLabel(ifFalseLabel);
 
     if (withElse) {
-      this.eatValue("else");
+      this.eatValue(Analizer.statementKeywords.else);
       this.eatValue("{");
       this.compileStatements();
       this.eatValue("}");
@@ -438,7 +440,7 @@ export class CompilationEngine {
 
     this.writer.writeLabel(whileExpLabel);
 
-    this.eatValue("while");
+    this.eatValue(Analizer.statementKeywords.while);
     this.eatValue("(");
     this.compileExpression();
     this.eatValue(")");
@@ -456,7 +458,7 @@ export class CompilationEngine {
 
   compileDo() {
     this.eatKey(Analizer.nonTerminalKeywords.doStatement);
-    this.eatValue("do");
+    this.eatValue(Analizer.statementKeywords.do);
 
     const identifier = this.readValue();
     const nextSymbol = this.treeBrowser.getCurrentNodeValue();
@@ -470,7 +472,7 @@ export class CompilationEngine {
   compileReturn() {
     this.eatKey(Analizer.nonTerminalKeywords.returnStatement);
 
-    this.eatValue("return");
+    this.eatValue(Analizer.statementKeywords.return);
 
     const { returnType } = this.currentSubroutine;
 
@@ -515,7 +517,7 @@ export class CompilationEngine {
     const nodeKey = this.treeBrowser.getCurrentNodeKey();
     let op;
 
-    if (nodeKey === "symbol") {
+    if (nodeKey === Tokenizer.tokenTypes.symbol) {
       op = this.readValue();
       this.eatKey(Analizer.nonTerminalKeywords.term);
     }

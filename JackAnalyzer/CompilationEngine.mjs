@@ -3,16 +3,30 @@ import { CompilationEngineError } from "./errors.mjs";
 import { last } from "./utils.mjs";
 
 export class CompilationEngine {
-  static classVarDecKeywords = ["static", "field"];
-  static subroutineDecKeywords = ["constructor", "function", "method"];
-  static statementKeywords = ["let", "if", "while", "do", "return"];
+  static classVarDecKeywords = {
+    static: Tokenizer.keywords.static,
+    field: Tokenizer.keywords.field,
+  };
+  static subroutineDecKeywords = {
+    constructor: Tokenizer.keywords.constructor,
+    function: Tokenizer.keywords.function,
+    method: Tokenizer.keywords.method,
+  };
+  static statementKeywords = {
+    let: Tokenizer.keywords.let,
+    if: Tokenizer.keywords.if,
+    else: Tokenizer.keywords.else,
+    while: Tokenizer.keywords.while,
+    do: Tokenizer.keywords.do,
+    return: Tokenizer.keywords.return,
+  };
   static op = ["+", "-", "*", "/", "&", "|", ">", "<", "="];
   static unaryOp = ["~", "-"];
   static keywordConstant = {
-    true: "true",
-    false: "false",
-    null: "null",
-    this: "this",
+    true: Tokenizer.keywords.true,
+    false: Tokenizer.keywords.false,
+    null: Tokenizer.keywords.null,
+    this: Tokenizer.keywords.this,
   };
   static nonTerminalKeywords = {
     class: "class",
@@ -87,7 +101,7 @@ export class CompilationEngine {
     this.eat("{");
 
     while (
-      CompilationEngine.classVarDecKeywords.includes(
+      Object.values(CompilationEngine.classVarDecKeywords).includes(
         this.tokenizer.getToken().value
       )
     ) {
@@ -95,7 +109,7 @@ export class CompilationEngine {
     }
 
     while (
-      CompilationEngine.subroutineDecKeywords.includes(
+      Object.values(CompilationEngine.subroutineDecKeywords).includes(
         this.tokenizer.getToken().value
       )
     ) {
@@ -185,21 +199,21 @@ export class CompilationEngine {
     this.createAndSetNode(CompilationEngine.nonTerminalKeywords.statements);
 
     while (
-      CompilationEngine.statementKeywords.includes(
+      Object.values(CompilationEngine.statementKeywords).includes(
         this.tokenizer.getToken().value
       )
     ) {
       const tokenValue = this.tokenizer.getToken().value;
 
-      if (tokenValue === "let") {
+      if (tokenValue === CompilationEngine.statementKeywords.let) {
         this.compileLet();
-      } else if (tokenValue === "if") {
+      } else if (tokenValue === CompilationEngine.statementKeywords.if) {
         this.compileIf();
-      } else if (tokenValue === "while") {
+      } else if (tokenValue === CompilationEngine.statementKeywords.while) {
         this.compileWhile();
-      } else if (tokenValue === "do") {
+      } else if (tokenValue === CompilationEngine.statementKeywords.do) {
         this.compileDo();
-      } else if (tokenValue === "return") {
+      } else if (tokenValue === CompilationEngine.statementKeywords.return) {
         this.compileReturn();
       }
     }
@@ -209,7 +223,7 @@ export class CompilationEngine {
 
   compileLet() {
     this.createAndSetNode(CompilationEngine.nonTerminalKeywords.letStatement);
-    this.eat("let");
+    this.eat(CompilationEngine.statementKeywords.let);
     this.eat(this.tokenizer.getToken().value);
 
     if (this.tokenizer.getToken().value === "[") {
@@ -226,7 +240,7 @@ export class CompilationEngine {
 
   compileIf() {
     this.createAndSetNode(CompilationEngine.nonTerminalKeywords.ifStatement);
-    this.eat("if");
+    this.eat(CompilationEngine.statementKeywords.if);
     this.eat("(");
     this.compileExpression();
     this.eat(")");
@@ -234,8 +248,11 @@ export class CompilationEngine {
     this.compileStatements();
     this.eat("}");
 
-    if (this.tokenizer.getToken().value === "else") {
-      this.eat("else");
+    if (
+      this.tokenizer.getToken().value ===
+      CompilationEngine.statementKeywords.else
+    ) {
+      this.eat(CompilationEngine.statementKeywords.else);
       this.eat("{");
       this.compileStatements();
       this.eat("}");
@@ -246,7 +263,7 @@ export class CompilationEngine {
 
   compileWhile() {
     this.createAndSetNode(CompilationEngine.nonTerminalKeywords.whileStatement);
-    this.eat("while");
+    this.eat(CompilationEngine.statementKeywords.while);
     this.eat("(");
     this.compileExpression();
     this.eat(")");
@@ -258,7 +275,7 @@ export class CompilationEngine {
 
   compileDo() {
     this.createAndSetNode(CompilationEngine.nonTerminalKeywords.doStatement);
-    this.eat("do");
+    this.eat(CompilationEngine.statementKeywords.do);
     this.eat(this.tokenizer.getToken().value);
 
     if (this.tokenizer.getToken().value === ".") {
@@ -277,7 +294,7 @@ export class CompilationEngine {
     this.createAndSetNode(
       CompilationEngine.nonTerminalKeywords.returnStatement
     );
-    this.eat("return");
+    this.eat(CompilationEngine.statementKeywords.return);
 
     if (this.tokenizer.getToken().value !== ";") {
       this.compileExpression();
