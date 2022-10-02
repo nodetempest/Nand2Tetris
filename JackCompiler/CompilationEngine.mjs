@@ -33,8 +33,6 @@ export class CompilationEngine {
       typeof value === "string" ? value.slice(1, -1) : value
     );
 
-    fs.writeFileSync(outputFile + ".json", format(analizerTree));
-
     this.compileClass();
   }
 
