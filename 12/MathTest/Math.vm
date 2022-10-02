@@ -1,0 +1,425 @@
+function Math.init 0
+push constant 15
+call Array.new 1
+pop static 0
+push constant 0
+push static 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 1
+push static 0
+add
+push constant 2
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 2
+push static 0
+add
+push constant 4
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 3
+push static 0
+add
+push constant 8
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 4
+push static 0
+add
+push constant 16
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 5
+push static 0
+add
+push constant 32
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 6
+push static 0
+add
+push constant 64
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 7
+push static 0
+add
+push constant 128
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 8
+push static 0
+add
+push constant 256
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 9
+push static 0
+add
+push constant 512
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 10
+push static 0
+add
+push constant 1024
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 11
+push static 0
+add
+push constant 2048
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 12
+push static 0
+add
+push constant 4096
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 13
+push static 0
+add
+push constant 8192
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 14
+push static 0
+add
+push constant 16384
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 0
+return
+function Math.getUIntBitsMap 2
+push constant 15
+call Array.new 1
+pop local 0
+push constant 14
+pop local 1
+label WHILE_EXP_87ecdf883884ab7da31fba0db0633f09
+push local 1
+push constant 1
+neg
+gt
+not
+if-goto WHILE_END_87ecdf883884ab7da31fba0db0633f09
+push argument 0
+push local 1
+push static 0
+add
+pop pointer 1
+push that 0
+push constant 1
+sub
+gt
+if-goto IF_TRUE_0d8eb76d688c252b9f44823fad9d5ee8
+goto IF_FALSE_0d8eb76d688c252b9f44823fad9d5ee8
+label IF_TRUE_0d8eb76d688c252b9f44823fad9d5ee8
+push local 1
+push local 0
+add
+push constant 0
+not
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 0
+push local 1
+push static 0
+add
+pop pointer 1
+push that 0
+sub
+pop argument 0
+goto IF_END_0d8eb76d688c252b9f44823fad9d5ee8
+label IF_FALSE_0d8eb76d688c252b9f44823fad9d5ee8
+push local 1
+push local 0
+add
+push constant 0
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+label IF_END_0d8eb76d688c252b9f44823fad9d5ee8
+push local 1
+push constant 1
+sub
+pop local 1
+goto WHILE_EXP_87ecdf883884ab7da31fba0db0633f09
+label WHILE_END_87ecdf883884ab7da31fba0db0633f09
+push local 0
+return
+function Math.manageSign 0
+push argument 0
+push constant 0
+lt
+push argument 1
+and
+push constant 0
+gt
+push argument 0
+push constant 0
+gt
+push argument 1
+and
+push constant 0
+lt
+or
+if-goto IF_TRUE_32ec861d87072eaaebac788305477501
+goto IF_FALSE_32ec861d87072eaaebac788305477501
+label IF_TRUE_32ec861d87072eaaebac788305477501
+push constant 0
+return
+goto IF_END_32ec861d87072eaaebac788305477501
+label IF_FALSE_32ec861d87072eaaebac788305477501
+push constant 0
+not
+return
+label IF_END_32ec861d87072eaaebac788305477501
+function Math.abs 0
+push argument 0
+push constant 0
+lt
+if-goto IF_TRUE_b636b1961ad7a4e3674a5d07fff304b5
+goto IF_FALSE_b636b1961ad7a4e3674a5d07fff304b5
+label IF_TRUE_b636b1961ad7a4e3674a5d07fff304b5
+push argument 0
+neg
+return
+label IF_FALSE_b636b1961ad7a4e3674a5d07fff304b5
+push argument 0
+return
+function Math.multiply 5
+push argument 0
+push argument 1
+call Math.manageSign 2
+not
+pop local 4
+push constant 0
+pop local 0
+push constant 0
+pop local 1
+push argument 0
+call Math.abs 1
+pop local 2
+push argument 1
+call Math.abs 1
+pop argument 1
+push argument 1
+call Math.getUIntBitsMap 1
+pop local 3
+label WHILE_EXP_52d3e7ad7d2fb3ce38091058ac53480b
+push local 1
+push constant 15
+lt
+not
+if-goto WHILE_END_52d3e7ad7d2fb3ce38091058ac53480b
+push local 1
+push local 3
+add
+pop pointer 1
+push that 0
+if-goto IF_TRUE_b6e9285a6fb61819896d9dfa82c40daf
+goto IF_FALSE_b6e9285a6fb61819896d9dfa82c40daf
+label IF_TRUE_b6e9285a6fb61819896d9dfa82c40daf
+push local 0
+push local 2
+add
+pop local 0
+label IF_FALSE_b6e9285a6fb61819896d9dfa82c40daf
+push local 1
+push constant 1
+add
+pop local 1
+push local 2
+push local 2
+add
+pop local 2
+goto WHILE_EXP_52d3e7ad7d2fb3ce38091058ac53480b
+label WHILE_END_52d3e7ad7d2fb3ce38091058ac53480b
+push local 4
+if-goto IF_TRUE_c8be42594b74912a8608ceb23750da92
+goto IF_FALSE_c8be42594b74912a8608ceb23750da92
+label IF_TRUE_c8be42594b74912a8608ceb23750da92
+push local 0
+neg
+pop local 0
+label IF_FALSE_c8be42594b74912a8608ceb23750da92
+push local 3
+call Array.dispose 1
+pop temp 0
+push local 0
+return
+function Math.divide 3
+push argument 0
+push argument 1
+call Math.manageSign 2
+not
+pop local 0
+push argument 0
+call Math.abs 1
+pop argument 0
+push argument 1
+call Math.abs 1
+pop argument 1
+push argument 1
+push argument 0
+gt
+if-goto IF_TRUE_31f91d192a49471e864ddbfce0624da8
+goto IF_FALSE_31f91d192a49471e864ddbfce0624da8
+label IF_TRUE_31f91d192a49471e864ddbfce0624da8
+push constant 0
+return
+label IF_FALSE_31f91d192a49471e864ddbfce0624da8
+push argument 0
+push argument 1
+push constant 2
+call Math.multiply 2
+call Math.divide 2
+pop local 1
+push argument 0
+push argument 1
+push local 1
+push constant 2
+call Math.multiply 2
+call Math.multiply 2
+sub
+push argument 1
+lt
+if-goto IF_TRUE_b93d20b1eedfc9cb9bc1de8dc7946119
+goto IF_FALSE_b93d20b1eedfc9cb9bc1de8dc7946119
+label IF_TRUE_b93d20b1eedfc9cb9bc1de8dc7946119
+push local 1
+push constant 2
+call Math.multiply 2
+pop local 2
+goto IF_END_b93d20b1eedfc9cb9bc1de8dc7946119
+label IF_FALSE_b93d20b1eedfc9cb9bc1de8dc7946119
+push local 1
+push constant 2
+call Math.multiply 2
+push constant 1
+add
+pop local 2
+label IF_END_b93d20b1eedfc9cb9bc1de8dc7946119
+push local 0
+if-goto IF_TRUE_2ad507f6237ad416cc1a047dd0c104c5
+goto IF_FALSE_2ad507f6237ad416cc1a047dd0c104c5
+label IF_TRUE_2ad507f6237ad416cc1a047dd0c104c5
+push local 2
+neg
+pop local 2
+label IF_FALSE_2ad507f6237ad416cc1a047dd0c104c5
+push local 2
+return
+function Math.sqrt 4
+push constant 0
+pop local 0
+push constant 7
+pop local 1
+label WHILE_EXP_e4e9643aa36e5d4edd04b9170da23770
+push local 1
+push constant 1
+neg
+gt
+not
+if-goto WHILE_END_e4e9643aa36e5d4edd04b9170da23770
+push local 0
+push local 1
+push static 0
+add
+pop pointer 1
+push that 0
+add
+pop local 2
+push local 2
+push local 2
+call Math.multiply 2
+pop local 3
+push local 3
+push constant 1
+sub
+push argument 0
+lt
+push local 3
+push constant 0
+gt
+and
+if-goto IF_TRUE_3fc010ae46dcfc4201f7bf5cfc0c1627
+goto IF_FALSE_3fc010ae46dcfc4201f7bf5cfc0c1627
+label IF_TRUE_3fc010ae46dcfc4201f7bf5cfc0c1627
+push local 2
+pop local 0
+label IF_FALSE_3fc010ae46dcfc4201f7bf5cfc0c1627
+push local 1
+push constant 1
+sub
+pop local 1
+goto WHILE_EXP_e4e9643aa36e5d4edd04b9170da23770
+label WHILE_END_e4e9643aa36e5d4edd04b9170da23770
+push local 0
+return
+function Math.max 0
+push argument 0
+push argument 1
+gt
+if-goto IF_TRUE_667e136c0c88be734aace034c640ba8c
+goto IF_FALSE_667e136c0c88be734aace034c640ba8c
+label IF_TRUE_667e136c0c88be734aace034c640ba8c
+push argument 0
+return
+goto IF_END_667e136c0c88be734aace034c640ba8c
+label IF_FALSE_667e136c0c88be734aace034c640ba8c
+push argument 1
+return
+label IF_END_667e136c0c88be734aace034c640ba8c
+function Math.min 0
+push argument 0
+push argument 1
+lt
+if-goto IF_TRUE_b9ffb95134d478c01d2531e8467e7886
+goto IF_FALSE_b9ffb95134d478c01d2531e8467e7886
+label IF_TRUE_b9ffb95134d478c01d2531e8467e7886
+push argument 0
+return
+goto IF_END_b9ffb95134d478c01d2531e8467e7886
+label IF_FALSE_b9ffb95134d478c01d2531e8467e7886
+push argument 1
+return
+label IF_END_b9ffb95134d478c01d2531e8467e7886
