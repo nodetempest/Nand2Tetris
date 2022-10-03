@@ -65,7 +65,7 @@ class Math {
     /** Returns the absolute value of x. */
     function int abs(int x) {
         if (x < 0) {
-            return - x;
+            return -x;
         }
         return x;
     }
@@ -76,16 +76,24 @@ class Math {
      *  the Jack expressions x*y and multiply(x,y) return the same value.
      */
     function int multiply(int x, int y) {
-        var int sum, i, shiftedX;
+        var int sum, i, shiftedX, temp;
         var Array bitsMap;
         var boolean shouldNegate;
 
         let shouldNegate = ~Math.manageSign(x, y);
 
-        let sum = 0;
-        let i = 0;
         let shiftedX = Math.abs(x);
         let y = Math.abs(y);
+        
+        // swap for better performance
+        if (y > shiftedX) {
+            let temp = y;
+            let y = shiftedX;
+            let shiftedX = temp;
+        }
+
+        let sum = 0;
+        let i = 0;
         let bitsMap = Math.getUIntBitsMap(y);
 
         while (i < 15) {
@@ -125,13 +133,13 @@ class Math {
             return 0;
         }
 
-        let q = Math.divide(x, Math.multiply(y, 2));
+        let q = Math.divide(x, y * 2);
 
 
-        if (x - Math.multiply(y, Math.multiply(q, 2)) < y) {
-            let result = Math.multiply(q, 2);
+        if ((x - (2 *q  * y)) < y) {
+            let result = 2 * q;
         } else {
-            let result = Math.multiply(q, 2) + 1;
+            let result = 2 * q + 1;
         }
 
         if (shouldNegate) {

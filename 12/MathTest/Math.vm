@@ -130,13 +130,13 @@ call Array.new 1
 pop local 0
 push constant 14
 pop local 1
-label WHILE_EXP_87ecdf883884ab7da31fba0db0633f09
+label WHILE_EXP_01e0afb2ce98851e6a070ea293d93787
 push local 1
 push constant 1
 neg
 gt
 not
-if-goto WHILE_END_87ecdf883884ab7da31fba0db0633f09
+if-goto WHILE_END_01e0afb2ce98851e6a070ea293d93787
 push argument 0
 push local 1
 push static 0
@@ -146,9 +146,9 @@ push that 0
 push constant 1
 sub
 gt
-if-goto IF_TRUE_0d8eb76d688c252b9f44823fad9d5ee8
-goto IF_FALSE_0d8eb76d688c252b9f44823fad9d5ee8
-label IF_TRUE_0d8eb76d688c252b9f44823fad9d5ee8
+if-goto IF_TRUE_edcab127a64d56c4ec0c28df5caf6528
+goto IF_FALSE_edcab127a64d56c4ec0c28df5caf6528
+label IF_TRUE_edcab127a64d56c4ec0c28df5caf6528
 push local 1
 push local 0
 add
@@ -166,8 +166,8 @@ pop pointer 1
 push that 0
 sub
 pop argument 0
-goto IF_END_0d8eb76d688c252b9f44823fad9d5ee8
-label IF_FALSE_0d8eb76d688c252b9f44823fad9d5ee8
+goto IF_END_edcab127a64d56c4ec0c28df5caf6528
+label IF_FALSE_edcab127a64d56c4ec0c28df5caf6528
 push local 1
 push local 0
 add
@@ -176,13 +176,13 @@ pop temp 0
 pop pointer 1
 push temp 0
 pop that 0
-label IF_END_0d8eb76d688c252b9f44823fad9d5ee8
+label IF_END_edcab127a64d56c4ec0c28df5caf6528
 push local 1
 push constant 1
 sub
 pop local 1
-goto WHILE_EXP_87ecdf883884ab7da31fba0db0633f09
-label WHILE_END_87ecdf883884ab7da31fba0db0633f09
+goto WHILE_EXP_01e0afb2ce98851e6a070ea293d93787
+label WHILE_END_01e0afb2ce98851e6a070ea293d93787
 push local 0
 return
 function Math.manageSign 0
@@ -201,40 +201,36 @@ and
 push constant 0
 lt
 or
-if-goto IF_TRUE_32ec861d87072eaaebac788305477501
-goto IF_FALSE_32ec861d87072eaaebac788305477501
-label IF_TRUE_32ec861d87072eaaebac788305477501
+if-goto IF_TRUE_f81a1332607904c0998e0a19fe468ac6
+goto IF_FALSE_f81a1332607904c0998e0a19fe468ac6
+label IF_TRUE_f81a1332607904c0998e0a19fe468ac6
 push constant 0
 return
-goto IF_END_32ec861d87072eaaebac788305477501
-label IF_FALSE_32ec861d87072eaaebac788305477501
+goto IF_END_f81a1332607904c0998e0a19fe468ac6
+label IF_FALSE_f81a1332607904c0998e0a19fe468ac6
 push constant 0
 not
 return
-label IF_END_32ec861d87072eaaebac788305477501
+label IF_END_f81a1332607904c0998e0a19fe468ac6
 function Math.abs 0
 push argument 0
 push constant 0
 lt
-if-goto IF_TRUE_b636b1961ad7a4e3674a5d07fff304b5
-goto IF_FALSE_b636b1961ad7a4e3674a5d07fff304b5
-label IF_TRUE_b636b1961ad7a4e3674a5d07fff304b5
+if-goto IF_TRUE_89c87e9ff9061f5fed9611a4cbe40d64
+goto IF_FALSE_89c87e9ff9061f5fed9611a4cbe40d64
+label IF_TRUE_89c87e9ff9061f5fed9611a4cbe40d64
 push argument 0
 neg
 return
-label IF_FALSE_b636b1961ad7a4e3674a5d07fff304b5
+label IF_FALSE_89c87e9ff9061f5fed9611a4cbe40d64
 push argument 0
 return
-function Math.multiply 5
+function Math.multiply 6
 push argument 0
 push argument 1
 call Math.manageSign 2
 not
-pop local 4
-push constant 0
-pop local 0
-push constant 0
-pop local 1
+pop local 5
 push argument 0
 call Math.abs 1
 pop local 2
@@ -242,27 +238,44 @@ push argument 1
 call Math.abs 1
 pop argument 1
 push argument 1
-call Math.getUIntBitsMap 1
+push local 2
+gt
+if-goto IF_TRUE_12cb44fce8810e5dc3cede3de140cecf
+goto IF_FALSE_12cb44fce8810e5dc3cede3de140cecf
+label IF_TRUE_12cb44fce8810e5dc3cede3de140cecf
+push argument 1
 pop local 3
-label WHILE_EXP_52d3e7ad7d2fb3ce38091058ac53480b
+push local 2
+pop argument 1
+push local 3
+pop local 2
+label IF_FALSE_12cb44fce8810e5dc3cede3de140cecf
+push constant 0
+pop local 0
+push constant 0
+pop local 1
+push argument 1
+call Math.getUIntBitsMap 1
+pop local 4
+label WHILE_EXP_a127022e3958d76beec1a6b09e15e732
 push local 1
 push constant 15
 lt
 not
-if-goto WHILE_END_52d3e7ad7d2fb3ce38091058ac53480b
+if-goto WHILE_END_a127022e3958d76beec1a6b09e15e732
 push local 1
-push local 3
+push local 4
 add
 pop pointer 1
 push that 0
-if-goto IF_TRUE_b6e9285a6fb61819896d9dfa82c40daf
-goto IF_FALSE_b6e9285a6fb61819896d9dfa82c40daf
-label IF_TRUE_b6e9285a6fb61819896d9dfa82c40daf
+if-goto IF_TRUE_cf0168fd7b55ad53f3f29970681b02c0
+goto IF_FALSE_cf0168fd7b55ad53f3f29970681b02c0
+label IF_TRUE_cf0168fd7b55ad53f3f29970681b02c0
 push local 0
 push local 2
 add
 pop local 0
-label IF_FALSE_b6e9285a6fb61819896d9dfa82c40daf
+label IF_FALSE_cf0168fd7b55ad53f3f29970681b02c0
 push local 1
 push constant 1
 add
@@ -271,17 +284,17 @@ push local 2
 push local 2
 add
 pop local 2
-goto WHILE_EXP_52d3e7ad7d2fb3ce38091058ac53480b
-label WHILE_END_52d3e7ad7d2fb3ce38091058ac53480b
-push local 4
-if-goto IF_TRUE_c8be42594b74912a8608ceb23750da92
-goto IF_FALSE_c8be42594b74912a8608ceb23750da92
-label IF_TRUE_c8be42594b74912a8608ceb23750da92
+goto WHILE_EXP_a127022e3958d76beec1a6b09e15e732
+label WHILE_END_a127022e3958d76beec1a6b09e15e732
+push local 5
+if-goto IF_TRUE_b7beb9ee8748c01304ee4a4ee0a706eb
+goto IF_FALSE_b7beb9ee8748c01304ee4a4ee0a706eb
+label IF_TRUE_b7beb9ee8748c01304ee4a4ee0a706eb
 push local 0
 neg
 pop local 0
-label IF_FALSE_c8be42594b74912a8608ceb23750da92
-push local 3
+label IF_FALSE_b7beb9ee8748c01304ee4a4ee0a706eb
+push local 4
 call Array.dispose 1
 pop temp 0
 push local 0
@@ -301,12 +314,12 @@ pop argument 1
 push argument 1
 push argument 0
 gt
-if-goto IF_TRUE_31f91d192a49471e864ddbfce0624da8
-goto IF_FALSE_31f91d192a49471e864ddbfce0624da8
-label IF_TRUE_31f91d192a49471e864ddbfce0624da8
+if-goto IF_TRUE_f16e5540c21723e53ca0a03aad75174e
+goto IF_FALSE_f16e5540c21723e53ca0a03aad75174e
+label IF_TRUE_f16e5540c21723e53ca0a03aad75174e
 push constant 0
 return
-label IF_FALSE_31f91d192a49471e864ddbfce0624da8
+label IF_FALSE_f16e5540c21723e53ca0a03aad75174e
 push argument 0
 push argument 1
 push constant 2
@@ -314,38 +327,38 @@ call Math.multiply 2
 call Math.divide 2
 pop local 1
 push argument 0
-push argument 1
-push local 1
 push constant 2
+push local 1
 call Math.multiply 2
+push argument 1
 call Math.multiply 2
 sub
 push argument 1
 lt
-if-goto IF_TRUE_b93d20b1eedfc9cb9bc1de8dc7946119
-goto IF_FALSE_b93d20b1eedfc9cb9bc1de8dc7946119
-label IF_TRUE_b93d20b1eedfc9cb9bc1de8dc7946119
-push local 1
+if-goto IF_TRUE_9b613190d1f0825b4b06c9fa69ce3069
+goto IF_FALSE_9b613190d1f0825b4b06c9fa69ce3069
+label IF_TRUE_9b613190d1f0825b4b06c9fa69ce3069
 push constant 2
+push local 1
 call Math.multiply 2
 pop local 2
-goto IF_END_b93d20b1eedfc9cb9bc1de8dc7946119
-label IF_FALSE_b93d20b1eedfc9cb9bc1de8dc7946119
-push local 1
+goto IF_END_9b613190d1f0825b4b06c9fa69ce3069
+label IF_FALSE_9b613190d1f0825b4b06c9fa69ce3069
 push constant 2
+push local 1
 call Math.multiply 2
 push constant 1
 add
 pop local 2
-label IF_END_b93d20b1eedfc9cb9bc1de8dc7946119
+label IF_END_9b613190d1f0825b4b06c9fa69ce3069
 push local 0
-if-goto IF_TRUE_2ad507f6237ad416cc1a047dd0c104c5
-goto IF_FALSE_2ad507f6237ad416cc1a047dd0c104c5
-label IF_TRUE_2ad507f6237ad416cc1a047dd0c104c5
+if-goto IF_TRUE_938d83ede8f3af65b28c56029f9a9c1d
+goto IF_FALSE_938d83ede8f3af65b28c56029f9a9c1d
+label IF_TRUE_938d83ede8f3af65b28c56029f9a9c1d
 push local 2
 neg
 pop local 2
-label IF_FALSE_2ad507f6237ad416cc1a047dd0c104c5
+label IF_FALSE_938d83ede8f3af65b28c56029f9a9c1d
 push local 2
 return
 function Math.sqrt 4
@@ -353,13 +366,13 @@ push constant 0
 pop local 0
 push constant 7
 pop local 1
-label WHILE_EXP_e4e9643aa36e5d4edd04b9170da23770
+label WHILE_EXP_dfdb38d217f911ea449cb1ca64e8d05c
 push local 1
 push constant 1
 neg
 gt
 not
-if-goto WHILE_END_e4e9643aa36e5d4edd04b9170da23770
+if-goto WHILE_END_dfdb38d217f911ea449cb1ca64e8d05c
 push local 0
 push local 1
 push static 0
@@ -381,45 +394,45 @@ push local 3
 push constant 0
 gt
 and
-if-goto IF_TRUE_3fc010ae46dcfc4201f7bf5cfc0c1627
-goto IF_FALSE_3fc010ae46dcfc4201f7bf5cfc0c1627
-label IF_TRUE_3fc010ae46dcfc4201f7bf5cfc0c1627
+if-goto IF_TRUE_acc04af020943c669de1a70df28c07d9
+goto IF_FALSE_acc04af020943c669de1a70df28c07d9
+label IF_TRUE_acc04af020943c669de1a70df28c07d9
 push local 2
 pop local 0
-label IF_FALSE_3fc010ae46dcfc4201f7bf5cfc0c1627
+label IF_FALSE_acc04af020943c669de1a70df28c07d9
 push local 1
 push constant 1
 sub
 pop local 1
-goto WHILE_EXP_e4e9643aa36e5d4edd04b9170da23770
-label WHILE_END_e4e9643aa36e5d4edd04b9170da23770
+goto WHILE_EXP_dfdb38d217f911ea449cb1ca64e8d05c
+label WHILE_END_dfdb38d217f911ea449cb1ca64e8d05c
 push local 0
 return
 function Math.max 0
 push argument 0
 push argument 1
 gt
-if-goto IF_TRUE_667e136c0c88be734aace034c640ba8c
-goto IF_FALSE_667e136c0c88be734aace034c640ba8c
-label IF_TRUE_667e136c0c88be734aace034c640ba8c
+if-goto IF_TRUE_85e299dbe362d28f53c3d208c628e68e
+goto IF_FALSE_85e299dbe362d28f53c3d208c628e68e
+label IF_TRUE_85e299dbe362d28f53c3d208c628e68e
 push argument 0
 return
-goto IF_END_667e136c0c88be734aace034c640ba8c
-label IF_FALSE_667e136c0c88be734aace034c640ba8c
+goto IF_END_85e299dbe362d28f53c3d208c628e68e
+label IF_FALSE_85e299dbe362d28f53c3d208c628e68e
 push argument 1
 return
-label IF_END_667e136c0c88be734aace034c640ba8c
+label IF_END_85e299dbe362d28f53c3d208c628e68e
 function Math.min 0
 push argument 0
 push argument 1
 lt
-if-goto IF_TRUE_b9ffb95134d478c01d2531e8467e7886
-goto IF_FALSE_b9ffb95134d478c01d2531e8467e7886
-label IF_TRUE_b9ffb95134d478c01d2531e8467e7886
+if-goto IF_TRUE_2d03b4732f2b56bb1b0cedd60d2a24f8
+goto IF_FALSE_2d03b4732f2b56bb1b0cedd60d2a24f8
+label IF_TRUE_2d03b4732f2b56bb1b0cedd60d2a24f8
 push argument 0
 return
-goto IF_END_b9ffb95134d478c01d2531e8467e7886
-label IF_FALSE_b9ffb95134d478c01d2531e8467e7886
+goto IF_END_2d03b4732f2b56bb1b0cedd60d2a24f8
+label IF_FALSE_2d03b4732f2b56bb1b0cedd60d2a24f8
 push argument 1
 return
-label IF_END_b9ffb95134d478c01d2531e8467e7886
+label IF_END_2d03b4732f2b56bb1b0cedd60d2a24f8
