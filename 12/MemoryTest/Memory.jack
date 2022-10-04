@@ -1,0 +1,81 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/12/Memory.jack
+
+/**
+ * This library provides two services: direct access to the computer's main
+ * memory (RAM), and allocation and recycling of memory blocks. The Hack RAM
+ * consists of 32,768 words, each holding a 16-bit binary number.
+ */ 
+class Memory {
+    static Array ram, heap, freeList;
+
+    /** Initializes the class. */
+    function void init() {
+        let ram = 0;
+
+        let heap = 2048;
+        let freeList = 2048;
+        let freeList[0] = 0;
+        let freeList[1] = 14334;
+
+        return;
+    }
+
+    /** Returns the RAM value at the given address. */
+    function int peek(int address) {
+        return ram[address];
+    }
+
+    /** Sets the RAM value at the given address to the given value. */
+    function void poke(int address, int value) {
+        let ram[address] = value;
+
+        return;
+    }
+
+    /** Finds an available RAM block of the given size and returns
+     *  a reference to its base address. */
+    function int alloc(int size) {
+        var Array ptr, newFrameHead;
+        var int length, bottom;
+
+        let ptr = freeList;
+        let length = ptr[1];
+
+        while (length < (size + 2)) {
+            let ptr = ptr[0];
+            let length = ptr[1];
+
+            if (ptr = 0) {
+                return -1;
+            }
+        }
+
+        let bottom = ptr + length + 2 - 1;
+        let newFrameHead = bottom - size - 1;
+        let newFrameHead[0] = 0;
+        let newFrameHead[1] = size;
+
+        let ptr[1] = length - size - 2;
+
+        return newFrameHead + 2;
+    }
+
+    /** De-allocates the given object (cast as an array) by making
+     *  it available for future allocations. */
+    function void deAlloc(Array o) {
+        var Array ptr;
+
+        let ptr = freeList;
+
+        while (~(ptr[0] = 0)) {
+            let ptr = ptr[0];
+        }
+        
+        let ptr[0] = o - 2;
+
+        return;
+    }    
+}

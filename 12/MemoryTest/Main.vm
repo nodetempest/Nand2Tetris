@@ -1,0 +1,176 @@
+function Main.main 5
+push constant 8000
+push constant 333
+call Memory.poke 2
+pop temp 0
+push constant 8000
+call Memory.peek 1
+pop local 0
+push constant 8001
+push local 0
+push constant 1
+add
+call Memory.poke 2
+pop temp 0
+push constant 3
+call Array.new 1
+pop local 2
+push constant 2
+push local 2
+add
+push constant 222
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 8002
+push constant 2
+push local 2
+add
+pop pointer 1
+push that 0
+call Memory.poke 2
+pop temp 0
+push constant 0
+pop local 1
+push constant 3
+call Array.new 1
+pop local 3
+push constant 1
+push local 3
+add
+push constant 2
+push local 2
+add
+pop pointer 1
+push that 0
+push constant 100
+sub
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push local 3
+push local 2
+eq
+if-goto IF_TRUE_cd37c1aeab1a1fc2cb46f4fb84749ce7
+goto IF_FALSE_cd37c1aeab1a1fc2cb46f4fb84749ce7
+label IF_TRUE_cd37c1aeab1a1fc2cb46f4fb84749ce7
+push constant 1
+pop local 1
+label IF_FALSE_cd37c1aeab1a1fc2cb46f4fb84749ce7
+push constant 8003
+push constant 1
+push local 3
+add
+pop pointer 1
+push that 0
+push local 1
+add
+call Memory.poke 2
+pop temp 0
+push constant 0
+pop local 1
+push constant 500
+call Array.new 1
+pop local 4
+push constant 499
+push local 4
+add
+push constant 2
+push local 2
+add
+pop pointer 1
+push that 0
+push constant 1
+push local 3
+add
+pop pointer 1
+push that 0
+sub
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push local 4
+push local 2
+eq
+if-goto IF_TRUE_5fb9e370ee92643e1578e20775f21797
+goto IF_FALSE_5fb9e370ee92643e1578e20775f21797
+label IF_TRUE_5fb9e370ee92643e1578e20775f21797
+push constant 1
+pop local 1
+label IF_FALSE_5fb9e370ee92643e1578e20775f21797
+push local 4
+push local 3
+eq
+if-goto IF_TRUE_de721254bb6aa7a95c5d52e83ae3ffb9
+goto IF_FALSE_de721254bb6aa7a95c5d52e83ae3ffb9
+label IF_TRUE_de721254bb6aa7a95c5d52e83ae3ffb9
+push local 1
+push constant 10
+add
+pop local 1
+label IF_FALSE_de721254bb6aa7a95c5d52e83ae3ffb9
+push constant 8004
+push constant 499
+push local 4
+add
+pop pointer 1
+push that 0
+push local 1
+add
+call Memory.poke 2
+pop temp 0
+push local 2
+call Array.dispose 1
+pop temp 0
+push local 3
+call Array.dispose 1
+pop temp 0
+push constant 0
+pop local 1
+push constant 3
+call Array.new 1
+pop local 3
+push constant 0
+push local 3
+add
+push constant 499
+push local 4
+add
+pop pointer 1
+push that 0
+push constant 90
+sub
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push local 3
+push local 4
+eq
+if-goto IF_TRUE_35dc2e16558342a9fe80ba03a88402fa
+goto IF_FALSE_35dc2e16558342a9fe80ba03a88402fa
+label IF_TRUE_35dc2e16558342a9fe80ba03a88402fa
+push constant 1
+pop local 1
+label IF_FALSE_35dc2e16558342a9fe80ba03a88402fa
+push constant 8005
+push constant 0
+push local 3
+add
+pop pointer 1
+push that 0
+push local 1
+add
+call Memory.poke 2
+pop temp 0
+push local 4
+call Array.dispose 1
+pop temp 0
+push local 3
+call Array.dispose 1
+pop temp 0
+push constant 0
+return
