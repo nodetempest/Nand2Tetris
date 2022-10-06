@@ -1,0 +1,775 @@
+function Screen.init 0
+push constant 0
+not
+pop static 2
+push constant 16384
+pop static 0
+push constant 15
+call Array.new 1
+pop static 1
+push constant 0
+push static 1
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 1
+push static 1
+add
+push constant 2
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 2
+push static 1
+add
+push constant 4
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 3
+push static 1
+add
+push constant 8
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 4
+push static 1
+add
+push constant 16
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 5
+push static 1
+add
+push constant 32
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 6
+push static 1
+add
+push constant 64
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 7
+push static 1
+add
+push constant 128
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 8
+push static 1
+add
+push constant 256
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 9
+push static 1
+add
+push constant 512
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 10
+push static 1
+add
+push constant 1024
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 11
+push static 1
+add
+push constant 2048
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 12
+push static 1
+add
+push constant 4096
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 13
+push static 1
+add
+push constant 8192
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 14
+push static 1
+add
+push constant 16384
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 15
+push static 1
+add
+push constant 32767
+push constant 1
+add
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 0
+return
+function Screen.clearScreen 1
+label WHILE_EXP_9b7f3add5c505360eafd95f96e6bb014
+push local 0
+push constant 8192
+lt
+not
+if-goto WHILE_END_9b7f3add5c505360eafd95f96e6bb014
+push local 0
+push static 0
+add
+push constant 0
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+goto WHILE_EXP_9b7f3add5c505360eafd95f96e6bb014
+label WHILE_END_9b7f3add5c505360eafd95f96e6bb014
+push constant 0
+return
+function Screen.setColor 0
+push argument 0
+pop static 2
+push constant 0
+return
+function Screen.drawPixel 5
+push static 0
+push argument 1
+push constant 32
+call Math.multiply 2
+add
+push argument 0
+push constant 16
+call Math.divide 2
+add
+pop local 0
+push local 0
+call Memory.peek 1
+pop local 1
+push argument 0
+push argument 0
+push constant 16
+call Math.divide 2
+push constant 16
+call Math.multiply 2
+sub
+pop local 3
+push static 2
+if-goto IF_TRUE_dd3bdb1f102be72d57530f33426842a8
+goto IF_FALSE_dd3bdb1f102be72d57530f33426842a8
+label IF_TRUE_dd3bdb1f102be72d57530f33426842a8
+push local 1
+push local 3
+push static 1
+add
+pop pointer 1
+push that 0
+or
+pop local 2
+goto IF_END_dd3bdb1f102be72d57530f33426842a8
+label IF_FALSE_dd3bdb1f102be72d57530f33426842a8
+push local 1
+push local 3
+push static 1
+add
+pop pointer 1
+push that 0
+not
+and
+pop local 2
+label IF_END_dd3bdb1f102be72d57530f33426842a8
+push local 0
+push local 2
+call Memory.poke 2
+pop temp 0
+push constant 0
+return
+function Screen.drawLine 4
+push argument 2
+push argument 0
+sub
+pop local 0
+push argument 3
+push argument 1
+sub
+pop local 1
+push local 0
+call Math.abs 1
+pop local 2
+push local 1
+call Math.abs 1
+pop local 3
+push local 0
+push constant 0
+eq
+if-goto IF_TRUE_33b8d84596df11941662ccc63ac685cb
+goto IF_FALSE_33b8d84596df11941662ccc63ac685cb
+label IF_TRUE_33b8d84596df11941662ccc63ac685cb
+push argument 1
+push argument 3
+push argument 0
+call Screen.drawVerticalLine 3
+pop temp 0
+push constant 0
+return
+label IF_FALSE_33b8d84596df11941662ccc63ac685cb
+push local 1
+push constant 0
+eq
+if-goto IF_TRUE_3c996f877692a6d5237555277156b3a5
+goto IF_FALSE_3c996f877692a6d5237555277156b3a5
+label IF_TRUE_3c996f877692a6d5237555277156b3a5
+push argument 0
+push argument 2
+push argument 1
+call Screen.drawHorizontalLine 3
+pop temp 0
+push constant 0
+return
+label IF_FALSE_3c996f877692a6d5237555277156b3a5
+push local 0
+push constant 0
+gt
+push local 1
+and
+push constant 0
+gt
+if-goto IF_TRUE_4673bf4885dbfd415342d43eb81d1bb8
+goto IF_FALSE_4673bf4885dbfd415342d43eb81d1bb8
+label IF_TRUE_4673bf4885dbfd415342d43eb81d1bb8
+push argument 0
+push argument 1
+push local 2
+push local 3
+call Screen.drawLineSE 4
+pop temp 0
+push constant 0
+return
+label IF_FALSE_4673bf4885dbfd415342d43eb81d1bb8
+push local 0
+push constant 0
+lt
+push local 1
+and
+push constant 0
+gt
+if-goto IF_TRUE_85dbc5d6a258e2361244c33a3f7e9a7a
+goto IF_FALSE_85dbc5d6a258e2361244c33a3f7e9a7a
+label IF_TRUE_85dbc5d6a258e2361244c33a3f7e9a7a
+push argument 0
+push argument 1
+push local 2
+push local 3
+call Screen.drawLineSW 4
+pop temp 0
+push constant 0
+return
+label IF_FALSE_85dbc5d6a258e2361244c33a3f7e9a7a
+push local 0
+push constant 0
+lt
+push local 1
+and
+push constant 0
+lt
+if-goto IF_TRUE_cb0fe60d5c9a1f20eca8eb87608632b1
+goto IF_FALSE_cb0fe60d5c9a1f20eca8eb87608632b1
+label IF_TRUE_cb0fe60d5c9a1f20eca8eb87608632b1
+push argument 0
+push argument 1
+push local 2
+push local 3
+call Screen.drawLineNW 4
+pop temp 0
+push constant 0
+return
+label IF_FALSE_cb0fe60d5c9a1f20eca8eb87608632b1
+push local 0
+push constant 0
+gt
+push local 1
+and
+push constant 0
+lt
+if-goto IF_TRUE_e958d0e283f185366f11060e58f700a3
+goto IF_FALSE_e958d0e283f185366f11060e58f700a3
+label IF_TRUE_e958d0e283f185366f11060e58f700a3
+push argument 0
+push argument 1
+push local 2
+push local 3
+call Screen.drawLineNE 4
+pop temp 0
+push constant 0
+return
+label IF_FALSE_e958d0e283f185366f11060e58f700a3
+push constant 0
+return
+function Screen.drawVerticalLine 1
+push argument 0
+push argument 1
+gt
+if-goto IF_TRUE_803fcb856df7d00f52a21f5d1f6e4b8f
+goto IF_FALSE_803fcb856df7d00f52a21f5d1f6e4b8f
+label IF_TRUE_803fcb856df7d00f52a21f5d1f6e4b8f
+push argument 0
+pop local 0
+push argument 1
+pop argument 0
+push local 0
+pop argument 1
+label IF_FALSE_803fcb856df7d00f52a21f5d1f6e4b8f
+label WHILE_EXP_59a6c238edd1e811d5f831dafc8cba6c
+push argument 0
+push constant 1
+sub
+push argument 1
+lt
+not
+if-goto WHILE_END_59a6c238edd1e811d5f831dafc8cba6c
+push argument 2
+push argument 0
+call Screen.drawPixel 2
+pop temp 0
+push argument 0
+push constant 1
+add
+pop argument 0
+goto WHILE_EXP_59a6c238edd1e811d5f831dafc8cba6c
+label WHILE_END_59a6c238edd1e811d5f831dafc8cba6c
+push constant 0
+return
+function Screen.drawHorizontalLine 1
+push argument 0
+push argument 1
+gt
+if-goto IF_TRUE_09a469475fb113b88cdbe017eac7c7c3
+goto IF_FALSE_09a469475fb113b88cdbe017eac7c7c3
+label IF_TRUE_09a469475fb113b88cdbe017eac7c7c3
+push argument 0
+pop local 0
+push argument 1
+pop argument 0
+push local 0
+pop argument 1
+label IF_FALSE_09a469475fb113b88cdbe017eac7c7c3
+label WHILE_EXP_91860225d1e014a4bf29f8021377d12d
+push argument 0
+push constant 1
+sub
+push argument 1
+lt
+not
+if-goto WHILE_END_91860225d1e014a4bf29f8021377d12d
+push argument 0
+push argument 2
+call Screen.drawPixel 2
+pop temp 0
+push argument 0
+push constant 1
+add
+pop argument 0
+goto WHILE_EXP_91860225d1e014a4bf29f8021377d12d
+label WHILE_END_91860225d1e014a4bf29f8021377d12d
+push constant 0
+return
+function Screen.drawLineSE 3
+push constant 0
+pop local 0
+push constant 0
+pop local 1
+push constant 0
+pop local 2
+label WHILE_EXP_322778c09916f8fe5e0bf050aeea0501
+push local 0
+push constant 1
+sub
+push argument 2
+lt
+push local 1
+push constant 1
+sub
+push argument 3
+lt
+and
+not
+if-goto WHILE_END_322778c09916f8fe5e0bf050aeea0501
+push argument 0
+push local 0
+add
+push argument 1
+push local 1
+add
+call Screen.drawPixel 2
+pop temp 0
+push local 2
+push constant 0
+lt
+if-goto IF_TRUE_484362d93ecb34761b9afd7417c551f5
+goto IF_FALSE_484362d93ecb34761b9afd7417c551f5
+label IF_TRUE_484362d93ecb34761b9afd7417c551f5
+push local 0
+push constant 1
+add
+pop local 0
+push local 2
+push argument 3
+add
+pop local 2
+goto IF_END_484362d93ecb34761b9afd7417c551f5
+label IF_FALSE_484362d93ecb34761b9afd7417c551f5
+push local 1
+push constant 1
+add
+pop local 1
+push local 2
+push argument 2
+sub
+pop local 2
+label IF_END_484362d93ecb34761b9afd7417c551f5
+goto WHILE_EXP_322778c09916f8fe5e0bf050aeea0501
+label WHILE_END_322778c09916f8fe5e0bf050aeea0501
+push constant 0
+return
+function Screen.drawLineSW 3
+push constant 0
+pop local 0
+push constant 0
+pop local 1
+push constant 0
+pop local 2
+label WHILE_EXP_b045bca1dd9caf829c97d1ff8526370b
+push local 0
+push constant 1
+sub
+push argument 2
+lt
+push local 1
+push constant 1
+sub
+push argument 3
+lt
+and
+not
+if-goto WHILE_END_b045bca1dd9caf829c97d1ff8526370b
+push argument 0
+push local 0
+sub
+push argument 1
+push local 1
+add
+call Screen.drawPixel 2
+pop temp 0
+push local 2
+push constant 0
+lt
+if-goto IF_TRUE_77a267f0b5e978be936b6e08a1ec0b75
+goto IF_FALSE_77a267f0b5e978be936b6e08a1ec0b75
+label IF_TRUE_77a267f0b5e978be936b6e08a1ec0b75
+push local 0
+push constant 1
+add
+pop local 0
+push local 2
+push argument 3
+add
+pop local 2
+goto IF_END_77a267f0b5e978be936b6e08a1ec0b75
+label IF_FALSE_77a267f0b5e978be936b6e08a1ec0b75
+push local 1
+push constant 1
+add
+pop local 1
+push local 2
+push argument 2
+sub
+pop local 2
+label IF_END_77a267f0b5e978be936b6e08a1ec0b75
+goto WHILE_EXP_b045bca1dd9caf829c97d1ff8526370b
+label WHILE_END_b045bca1dd9caf829c97d1ff8526370b
+push constant 0
+return
+function Screen.drawLineNW 3
+push constant 0
+pop local 0
+push constant 0
+pop local 1
+push constant 0
+pop local 2
+label WHILE_EXP_baff52d0b232b0253de655e75c1dbf68
+push local 0
+push constant 1
+sub
+push argument 2
+lt
+push local 1
+push constant 1
+sub
+push argument 3
+lt
+and
+not
+if-goto WHILE_END_baff52d0b232b0253de655e75c1dbf68
+push argument 0
+push local 0
+sub
+push argument 1
+push local 1
+sub
+call Screen.drawPixel 2
+pop temp 0
+push local 2
+push constant 0
+lt
+if-goto IF_TRUE_b544f623a0ca40a3882cdefb85ad323c
+goto IF_FALSE_b544f623a0ca40a3882cdefb85ad323c
+label IF_TRUE_b544f623a0ca40a3882cdefb85ad323c
+push local 0
+push constant 1
+add
+pop local 0
+push local 2
+push argument 3
+add
+pop local 2
+goto IF_END_b544f623a0ca40a3882cdefb85ad323c
+label IF_FALSE_b544f623a0ca40a3882cdefb85ad323c
+push local 1
+push constant 1
+add
+pop local 1
+push local 2
+push argument 2
+sub
+pop local 2
+label IF_END_b544f623a0ca40a3882cdefb85ad323c
+goto WHILE_EXP_baff52d0b232b0253de655e75c1dbf68
+label WHILE_END_baff52d0b232b0253de655e75c1dbf68
+push constant 0
+return
+function Screen.drawLineNE 3
+push constant 0
+pop local 0
+push constant 0
+pop local 1
+push constant 0
+pop local 2
+label WHILE_EXP_df8b7ae5417980b47631bca355bc2b27
+push local 0
+push constant 1
+sub
+push argument 2
+lt
+push local 1
+push constant 1
+sub
+push argument 3
+lt
+and
+not
+if-goto WHILE_END_df8b7ae5417980b47631bca355bc2b27
+push argument 0
+push local 0
+add
+push argument 1
+push local 1
+sub
+call Screen.drawPixel 2
+pop temp 0
+push local 2
+push constant 0
+lt
+if-goto IF_TRUE_030c3409e045611ceb8effedf4bd186c
+goto IF_FALSE_030c3409e045611ceb8effedf4bd186c
+label IF_TRUE_030c3409e045611ceb8effedf4bd186c
+push local 0
+push constant 1
+add
+pop local 0
+push local 2
+push argument 3
+add
+pop local 2
+goto IF_END_030c3409e045611ceb8effedf4bd186c
+label IF_FALSE_030c3409e045611ceb8effedf4bd186c
+push local 1
+push constant 1
+add
+pop local 1
+push local 2
+push argument 2
+sub
+pop local 2
+label IF_END_030c3409e045611ceb8effedf4bd186c
+goto WHILE_EXP_df8b7ae5417980b47631bca355bc2b27
+label WHILE_END_df8b7ae5417980b47631bca355bc2b27
+push constant 0
+return
+function Screen.drawRectangle 3
+push argument 2
+push argument 0
+sub
+pop local 0
+push argument 3
+push argument 1
+sub
+pop local 1
+push local 0
+push constant 0
+lt
+if-goto IF_TRUE_87ecfe6d60c6fdb859b94d9cf5eef4b2
+goto IF_FALSE_87ecfe6d60c6fdb859b94d9cf5eef4b2
+label IF_TRUE_87ecfe6d60c6fdb859b94d9cf5eef4b2
+push argument 0
+pop local 2
+push argument 2
+pop argument 0
+push local 2
+pop argument 2
+label IF_FALSE_87ecfe6d60c6fdb859b94d9cf5eef4b2
+push local 1
+push constant 0
+lt
+if-goto IF_TRUE_21068cbcac2c50ad6925b34e5176f67f
+goto IF_FALSE_21068cbcac2c50ad6925b34e5176f67f
+label IF_TRUE_21068cbcac2c50ad6925b34e5176f67f
+push argument 1
+pop local 2
+push argument 3
+pop argument 1
+push local 2
+pop argument 3
+label IF_FALSE_21068cbcac2c50ad6925b34e5176f67f
+push local 0
+push local 1
+gt
+if-goto IF_TRUE_161b8a0cc986a0267f5f834acd5c6347
+goto IF_FALSE_161b8a0cc986a0267f5f834acd5c6347
+label IF_TRUE_161b8a0cc986a0267f5f834acd5c6347
+label WHILE_EXP_0a026d53245a186ad824a45b2e69f8df
+push argument 1
+push constant 1
+sub
+push argument 3
+lt
+not
+if-goto WHILE_END_0a026d53245a186ad824a45b2e69f8df
+push argument 0
+push argument 1
+push argument 2
+push argument 1
+call Screen.drawLine 4
+pop temp 0
+push argument 1
+push constant 1
+add
+pop argument 1
+goto WHILE_EXP_0a026d53245a186ad824a45b2e69f8df
+label WHILE_END_0a026d53245a186ad824a45b2e69f8df
+goto IF_END_161b8a0cc986a0267f5f834acd5c6347
+label IF_FALSE_161b8a0cc986a0267f5f834acd5c6347
+label WHILE_EXP_68e80b6dc5c1af90631198dfeff783e0
+push argument 0
+push constant 1
+sub
+push argument 2
+lt
+not
+if-goto WHILE_END_68e80b6dc5c1af90631198dfeff783e0
+push argument 0
+push argument 1
+push argument 0
+push argument 3
+call Screen.drawLine 4
+pop temp 0
+push argument 0
+push constant 1
+add
+pop argument 0
+goto WHILE_EXP_68e80b6dc5c1af90631198dfeff783e0
+label WHILE_END_68e80b6dc5c1af90631198dfeff783e0
+label IF_END_161b8a0cc986a0267f5f834acd5c6347
+push constant 0
+return
+function Screen.drawCircle 5
+push argument 2
+push constant 181
+call Math.min 2
+pop argument 2
+push argument 2
+neg
+pop local 0
+label WHILE_EXP_7b0ff9bc8f816c981cedac5e64f10dff
+push local 0
+push constant 1
+sub
+push argument 2
+lt
+not
+if-goto WHILE_END_7b0ff9bc8f816c981cedac5e64f10dff
+push argument 2
+push argument 2
+call Math.multiply 2
+push local 0
+push local 0
+call Math.multiply 2
+sub
+call Math.sqrt 1
+pop local 4
+push argument 0
+push local 4
+sub
+pop local 1
+push argument 0
+push local 4
+add
+pop local 2
+push argument 1
+push local 0
+add
+pop local 3
+push local 1
+push local 3
+push local 2
+push local 3
+call Screen.drawLine 4
+pop temp 0
+push local 0
+push constant 1
+add
+pop local 0
+goto WHILE_EXP_7b0ff9bc8f816c981cedac5e64f10dff
+label WHILE_END_7b0ff9bc8f816c981cedac5e64f10dff
+push constant 0
+return
