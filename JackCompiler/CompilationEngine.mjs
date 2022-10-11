@@ -656,7 +656,12 @@ export class CompilationEngine {
 
       this.writer.writePush(VMWriter.segment.POINTER, 0);
 
-      const nArgs = this.compileExpressionList();
+      const nArgs = this.getNArgsInExpList(
+        this.treeBrowser.getCurrentNodeValue()
+      );
+
+      this.compileExpressionList();
+
       this.eatValue(")");
 
       this.writer.writeCall([this.className, identifier].join("."), nArgs + 1);
@@ -668,8 +673,9 @@ export class CompilationEngine {
       const methodName = this.readValue();
 
       this.eatValue("(");
-      const nArgs = this.compileExpressionList();
-      this.eatValue(")");
+      const nArgs = this.getNArgsInExpList(
+        this.treeBrowser.getCurrentNodeValue()
+      );
 
       // Example:
       // var Point p1, p2, p3;
@@ -682,6 +688,8 @@ export class CompilationEngine {
       // p1.add(p2) --> add(p1, p2)
       if (this.varExists(identifier)) {
         this.writePushVar(identifier);
+        this.compileExpressionList();
+        this.eatValue(")");
 
         const { type } = this.lookupVar(identifier);
         this.writer.writeCall([type, methodName].join("."), nArgs + 1);
@@ -692,6 +700,8 @@ export class CompilationEngine {
       // let distance = Point.measureDistance(p1, p2);
       // Point.measureDistance(p1, p2) --> Point.measureDistance(p1, p2)
       else {
+        this.compileExpressionList();
+        this.eatValue(")");
         this.writer.writeCall([identifier, methodName].join("."), nArgs);
       }
     }
@@ -701,23 +711,30 @@ export class CompilationEngine {
   // expression list is: p1.add(p3), p2
   compileExpressionList() {
     const isEmpty = !this.treeBrowser.getCurrentNodeValue().length;
-    let nArgs = 0;
 
     this.eatKey(Analizer.nonTerminalKeywords.EXPRESSION_LIST);
 
     if (isEmpty) {
-      return nArgs;
+      return;
     }
 
     this.compileExpression();
-    nArgs++;
 
     while (this.treeBrowser.getCurrentNodeValue() === ",") {
       this.eatValue(",");
       this.compileExpression();
-      nArgs++;
     }
+  }
 
-    return nArgs;
+  // Example:
+  // getNArgsInExpList(<expressionList>
+  //                     <expression>...</expression>
+  //                     <symbol> , <symbol/>
+  //                     <expression>...</expression>
+  //                   </expressionList>) === 2;
+  getNArgsInExpList(expListValue) {
+    return expListValue.filter(
+      (node) => node[Analizer.nonTerminalKeywords.EXPRESSION]
+    ).length;
   }
 }
