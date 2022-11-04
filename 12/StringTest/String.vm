@@ -1,0 +1,235 @@
+function String.new 0
+push constant 2
+call Memory.alloc 1
+pop pointer 0
+push constant 1
+push argument 0
+call Math.max 2
+pop argument 0
+push argument 0
+call Array.new 1
+pop this 0
+push constant 0
+pop this 1
+push pointer 0
+return
+function String.dispose 0
+push argument 0
+pop pointer 0
+push constant 0
+pop this 1
+push this 0
+call Memory.deAlloc 1
+pop temp 0
+push constant 0
+return
+function String.length 0
+push argument 0
+pop pointer 0
+push this 1
+return
+function String.charAt 0
+push argument 0
+pop pointer 0
+push argument 1
+push this 0
+add
+pop pointer 1
+push that 0
+return
+function String.setCharAt 0
+push argument 0
+pop pointer 0
+push argument 1
+push this 0
+add
+push argument 2
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 0
+return
+function String.appendChar 0
+push argument 0
+pop pointer 0
+push this 1
+push this 0
+add
+push argument 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push this 1
+push constant 1
+add
+pop this 1
+push pointer 0
+return
+function String.eraseLastChar 0
+push argument 0
+pop pointer 0
+push constant 0
+push this 1
+push constant 1
+sub
+call Math.max 2
+pop this 1
+push constant 0
+return
+function String.intValue 4
+push argument 0
+pop pointer 0
+push pointer 0
+push constant 0
+call String.charAt 2
+push constant 45
+eq
+if-goto IF_TRUE_f87a5afe96448d3640a9d3ff49cd96fd
+goto IF_FALSE_f87a5afe96448d3640a9d3ff49cd96fd
+label IF_TRUE_f87a5afe96448d3640a9d3ff49cd96fd
+push constant 0
+pop local 0
+goto IF_END_f87a5afe96448d3640a9d3ff49cd96fd
+label IF_FALSE_f87a5afe96448d3640a9d3ff49cd96fd
+push constant 1
+neg
+pop local 0
+label IF_END_f87a5afe96448d3640a9d3ff49cd96fd
+push constant 1
+pop local 2
+push this 1
+push constant 1
+sub
+pop local 1
+push constant 0
+pop local 3
+label WHILE_EXP_309a8d443a4d2e8e60e3ddf32d59bf2d
+push local 1
+push local 0
+gt
+not
+if-goto WHILE_END_309a8d443a4d2e8e60e3ddf32d59bf2d
+push local 3
+push pointer 0
+push local 1
+call String.charAt 2
+push constant 48
+sub
+push local 2
+call Math.multiply 2
+add
+pop local 3
+push local 1
+push constant 1
+sub
+pop local 1
+push local 2
+push constant 10
+call Math.multiply 2
+pop local 2
+goto WHILE_EXP_309a8d443a4d2e8e60e3ddf32d59bf2d
+label WHILE_END_309a8d443a4d2e8e60e3ddf32d59bf2d
+push pointer 0
+push constant 0
+call String.charAt 2
+push constant 45
+eq
+if-goto IF_TRUE_1a7bdb8b3ffef2ccbc39bd65cfd8cbfa
+goto IF_FALSE_1a7bdb8b3ffef2ccbc39bd65cfd8cbfa
+label IF_TRUE_1a7bdb8b3ffef2ccbc39bd65cfd8cbfa
+push local 3
+neg
+pop local 3
+label IF_FALSE_1a7bdb8b3ffef2ccbc39bd65cfd8cbfa
+push local 3
+return
+function String.setInt 3
+push argument 0
+pop pointer 0
+push constant 1
+pop this 1
+push constant 1
+pop local 1
+push constant 0
+pop local 2
+push argument 1
+push constant 0
+lt
+if-goto IF_TRUE_d759876bed30c641ba2b55c3b2ac782c
+goto IF_FALSE_d759876bed30c641ba2b55c3b2ac782c
+label IF_TRUE_d759876bed30c641ba2b55c3b2ac782c
+push pointer 0
+push constant 0
+push constant 45
+call String.setCharAt 3
+pop temp 0
+push argument 1
+call Math.abs 1
+pop argument 1
+push constant 1
+pop local 2
+label IF_FALSE_d759876bed30c641ba2b55c3b2ac782c
+label WHILE_EXP_c2f08926a3be1f74b8261255f2048764
+push argument 1
+push local 1
+call Math.divide 2
+push constant 10
+gt
+not
+if-goto WHILE_END_c2f08926a3be1f74b8261255f2048764
+push local 1
+push constant 10
+call Math.multiply 2
+pop local 1
+push this 1
+push constant 1
+add
+pop this 1
+goto WHILE_EXP_c2f08926a3be1f74b8261255f2048764
+label WHILE_END_c2f08926a3be1f74b8261255f2048764
+label WHILE_EXP_35d1c75ae9ad2a90212cd55a3a97b0c8
+push local 2
+push this 1
+lt
+not
+if-goto WHILE_END_35d1c75ae9ad2a90212cd55a3a97b0c8
+push argument 1
+push local 1
+call Math.divide 2
+pop local 0
+push pointer 0
+push local 2
+push constant 48
+push local 0
+add
+call String.setCharAt 3
+pop temp 0
+push argument 1
+push local 0
+push local 1
+call Math.multiply 2
+sub
+pop argument 1
+push local 1
+push constant 10
+call Math.divide 2
+pop local 1
+push local 2
+push constant 1
+add
+pop local 2
+goto WHILE_EXP_35d1c75ae9ad2a90212cd55a3a97b0c8
+label WHILE_END_35d1c75ae9ad2a90212cd55a3a97b0c8
+push constant 0
+return
+function String.newLine 0
+push constant 128
+return
+function String.backSpace 0
+push constant 129
+return
+function String.doubleQuote 0
+push constant 34
+return
