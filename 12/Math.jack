@@ -8,13 +8,66 @@
  * Note: Jack compilers implement multiplication and division using OS method calls.
  */
 class Math {
+    static Array twoToThe;
 
     /** Initializes the library. */
     function void init() {
+        let twoToThe = Array.new(15);
+
+        let twoToThe[0] = 1;
+        let twoToThe[1] = 2;
+        let twoToThe[2] = 4;
+        let twoToThe[3] = 8;
+        let twoToThe[4] = 16;
+        let twoToThe[5] = 32;
+        let twoToThe[6] = 64;
+        let twoToThe[7] = 128;
+        let twoToThe[8] = 256;
+        let twoToThe[9] = 512;
+        let twoToThe[10] = 1024;
+        let twoToThe[11] = 2048;
+        let twoToThe[12] = 4096;
+        let twoToThe[13] = 8192;
+        let twoToThe[14] = 16384;
+
+        return;
+    }
+
+    function Array getUIntBitsMap(int x) {
+        var Array bitsMap;
+        var int i;
+
+        let bitsMap = Array.new(15);
+        let i = 14;
+
+        while (i > -1) {         
+            if (x > (twoToThe[i] - 1)) {
+                let bitsMap[i] = true;
+                let x = x - twoToThe[i];
+            } else {
+                let bitsMap[i] = false;
+            }
+
+            let i = i - 1;
+        }
+        
+        return bitsMap;
+    }
+
+    function boolean manageSign(int x, int y) {
+        if ((x < 0 & y > 0) | (x > 0 & y < 0)) {
+            return false;
+        } else {
+            return true;
+        }
     }
 
     /** Returns the absolute value of x. */
     function int abs(int x) {
+        if (x < 0) {
+            return -x;
+        }
+        return x;
     }
 
     /** Returns the product of x and y. 
@@ -23,6 +76,42 @@ class Math {
      *  the Jack expressions x*y and multiply(x,y) return the same value.
      */
     function int multiply(int x, int y) {
+        var int sum, i, shiftedX, temp;
+        var Array bitsMap;
+        var boolean shouldNegate;
+
+        let shouldNegate = ~Math.manageSign(x, y);
+
+        let shiftedX = Math.abs(x);
+        let y = Math.abs(y);
+        
+        // swap for better performance
+        if (y > shiftedX) {
+            let temp = y;
+            let y = shiftedX;
+            let shiftedX = temp;
+        }
+
+        let sum = 0;
+        let i = 0;
+        let bitsMap = Math.getUIntBitsMap(y);
+
+        while (i < 15) {
+            if (bitsMap[i]) {
+                let sum = sum + shiftedX;
+            }
+            
+            let i = i + 1;
+            let shiftedX = shiftedX + shiftedX;
+        }
+
+        if (shouldNegate) {
+            let sum = -sum;
+        }
+
+        do bitsMap.dispose();
+
+        return sum;
     }
 
     /** Returns the integer part of x/y.
@@ -31,17 +120,71 @@ class Math {
      *  the Jack expressions x/y and divide(x,y) return the same value.
      */
     function int divide(int x, int y) {
+        var boolean shouldNegate;
+        var int q, result;
+
+        let shouldNegate = ~Math.manageSign(x, y);
+
+        let x = Math.abs(x);
+        let y = Math.abs(y);
+
+
+        if (y > x) {
+            return 0;
+        }
+
+        let q = Math.divide(x, y * 2);
+
+
+        if ((x - (2 *q  * y)) < y) {
+            let result = 2 * q;
+        } else {
+            let result = 2 * q + 1;
+        }
+
+        if (shouldNegate) {
+            let result = -result;
+        }
+
+        return result;
     }
 
     /** Returns the integer part of the square root of x. */
     function int sqrt(int x) {
+        var int y, j, nextValue, nextSquared;
+
+        let y = 0;
+        let j = 7;
+
+        while (j > -1) {
+            let nextValue = y + twoToThe[j];
+            let nextSquared = nextValue * nextValue;
+
+            if ((nextSquared - 1 < x) & (nextSquared > 0)) {
+                let y = nextValue;
+            }
+
+            let j = j - 1;
+        }
+
+        return y;
     }
 
     /** Returns the greater number. */
     function int max(int a, int b) {
+        if (a > b) {
+            return a;
+        } else {
+            return b;
+        }
     }
 
     /** Returns the smaller number. */
     function int min(int a, int b) {
+        if (a < b) {
+            return a;
+        } else {
+            return b;
+        }
     }
 }
