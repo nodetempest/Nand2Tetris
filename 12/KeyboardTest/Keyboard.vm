@@ -1,0 +1,94 @@
+function Keyboard.init 0
+push constant 0
+return
+function Keyboard.keyPressed 0
+push constant 24576
+call Memory.peek 1
+return
+function Keyboard.readChar 1
+label WHILE_EXP_a968692a984d6d4e51d02e0131a5c4ec
+call Keyboard.keyPressed 0
+push constant 0
+eq
+not
+if-goto WHILE_END_a968692a984d6d4e51d02e0131a5c4ec
+goto WHILE_EXP_a968692a984d6d4e51d02e0131a5c4ec
+label WHILE_END_a968692a984d6d4e51d02e0131a5c4ec
+call Keyboard.keyPressed 0
+pop local 0
+label WHILE_EXP_0ab6dfa34ef9da4f6959db138708c3c5
+call Keyboard.keyPressed 0
+push constant 0
+eq
+not
+not
+if-goto WHILE_END_0ab6dfa34ef9da4f6959db138708c3c5
+goto WHILE_EXP_0ab6dfa34ef9da4f6959db138708c3c5
+label WHILE_END_0ab6dfa34ef9da4f6959db138708c3c5
+push local 0
+call Output.printChar 1
+pop temp 0
+push local 0
+return
+function Keyboard.readLine 2
+push argument 0
+call Output.printString 1
+pop temp 0
+push constant 512
+call String.new 1
+pop local 0
+label WHILE_EXP_a60586c1afe12ae99d851a86c8a0fcf4
+push constant 0
+not
+not
+if-goto WHILE_END_a60586c1afe12ae99d851a86c8a0fcf4
+call Keyboard.readChar 0
+pop local 1
+push local 1
+call String.newLine 0
+eq
+if-goto IF_TRUE_4927c60fa7c958e639b53733b94bec0f
+goto IF_FALSE_4927c60fa7c958e639b53733b94bec0f
+label IF_TRUE_4927c60fa7c958e639b53733b94bec0f
+call Output.println 0
+pop temp 0
+push local 0
+return
+label IF_FALSE_4927c60fa7c958e639b53733b94bec0f
+push local 1
+call String.backSpace 0
+eq
+if-goto IF_TRUE_0fe23b936a1e154213aa8fa9e317fb59
+goto IF_FALSE_0fe23b936a1e154213aa8fa9e317fb59
+label IF_TRUE_0fe23b936a1e154213aa8fa9e317fb59
+push local 0
+call String.length 1
+push constant 0
+gt
+if-goto IF_TRUE_00f3c525ccbab25e24d2046869a3fa40
+goto IF_FALSE_00f3c525ccbab25e24d2046869a3fa40
+label IF_TRUE_00f3c525ccbab25e24d2046869a3fa40
+push local 0
+call String.eraseLastChar 1
+pop temp 0
+call Output.backSpace 0
+pop temp 0
+label IF_FALSE_00f3c525ccbab25e24d2046869a3fa40
+goto IF_END_0fe23b936a1e154213aa8fa9e317fb59
+label IF_FALSE_0fe23b936a1e154213aa8fa9e317fb59
+push local 0
+push local 1
+call String.appendChar 2
+pop temp 0
+label IF_END_0fe23b936a1e154213aa8fa9e317fb59
+goto WHILE_EXP_a60586c1afe12ae99d851a86c8a0fcf4
+label WHILE_END_a60586c1afe12ae99d851a86c8a0fcf4
+push local 0
+return
+function Keyboard.readInt 1
+push argument 0
+call Keyboard.readLine 1
+pop local 0
+push local 0
+call String.intValue 1
+return
